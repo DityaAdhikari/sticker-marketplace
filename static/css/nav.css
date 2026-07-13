@@ -203,3 +203,63 @@ body {
   top: 15px;
   right: -8px;
 }
+
+
+/* 5. Mobile Menu Toggle Styles */
+.mobile-menu-toggle {
+  display: none; /* Hidden on desktop */
+  font-size: 22px;
+  cursor: pointer;
+  color: #fff;
+  margin-left: 10px;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 992px) {
+  .nav-search {
+    width: 200px;
+  }
+  .nav-links {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    border-radius: 25px;
+    padding: 12px 20px;
+  }
+  
+  .nav-search, .nav-divider, .action-label {
+    display: none; /* Hide non-essential items on compact screens */
+  }
+
+  .mobile-menu-toggle {
+    display: block; /* Show hamburger button */
+  }
+
+  /* Transform links into a mobile drawer overlay */
+  .nav-links {
+    display: none; 
+    flex-direction: column;
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    right: 20px;
+    background-color: #121212;
+    border: 1px solid #2a2a2a;
+    border-radius: 20px;
+    padding: 20px;
+    gap: 20px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  }
+
+  .nav-links.show {
+    display: flex; /* Triggered via JS */
+  }
+  
+  .nav-item.active::after {
+    bottom: -4px;
+  }
+}

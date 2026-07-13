@@ -1,0 +1,256 @@
+/* Base Resets */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: #0b0b0b;
+}
+
+/* Footer Wrapper */
+.main-footer {
+  background-color: #0c0c0c;
+  color: #ffffff;
+  padding: 60px 20px 30px 20px;
+  border-top: 1px solid #141414;
+}
+
+.footer-container {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* Top Layout Grid */
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 1.4fr;
+  gap: 40px;
+  padding-bottom: 50px;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Column 1 Specifics (Brand) */
+.footer-logo {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.footer-logo span {
+  color: #ff4500;
+}
+
+.logo-diamond {
+  color: #ff4500;
+  font-size: 16px;
+  transform: rotate(15deg);
+}
+
+.brand-subtext {
+  font-size: 13px;
+  color: #888888;
+  margin-bottom: 20px;
+}
+
+.brand-desc {
+  font-size: 13px;
+  color: #aaaaaa;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  max-width: 260px;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-links a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #222222;
+  color: #aaaaaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+  border-color: #ff4500;
+  color: #ffffff;
+  background-color: rgba(255, 69, 0, 0.05);
+}
+
+/* Standard Link Column Layouts */
+.col-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+}
+
+/* Underline Accents */
+.col-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 24px;
+  height: 2px;
+  background-color: #ff4500;
+}
+
+.col-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.col-links a {
+  color: #aaaaaa;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+
+.col-links a:hover {
+  color: #ffffff;
+}
+
+/* Column 5 Specifics (Newsletter) */
+.newsletter-text {
+  font-size: 13px;
+  color: #aaaaaa;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  max-width: 280px;
+}
+
+.subscribe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 320px;
+}
+
+.subscribe-form input {
+  background-color: #121212;
+  border: 1px solid #222222;
+  border-radius: 6px;
+  padding: 12px 16px;
+  color: #ffffff;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.subscribe-form input:focus {
+  border-color: #ff4500;
+}
+
+.btn-subscribe {
+  background-color: #ff4500;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-subscribe:hover {
+  background-color: #e03d00;
+}
+
+/* --- BOTTOM LAW & COPYRIGHT ROW --- */
+.footer-bottom {
+  border-top: 1px solid #141414;
+  padding-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copyright-text {
+  font-size: 12px;
+  color: #666666;
+}
+
+.legal-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.legal-links a {
+  color: #888888;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s;
+}
+
+.legal-links a:hover {
+  color: #ffffff;
+}
+
+.dot-separator {
+  width: 4px;
+  height: 4px;
+  background-color: #ff4500;
+  border-radius: 50%;
+}
+
+/* --- RESPONSIVE BREAKPOINTS --- */
+@media (max-width: 1024px) {
+  .footer-top {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+  .brand-col, .newsletter-col {
+    grid-column: span 3;
+  }
+  .brand-desc, .newsletter-text {
+    max-width: 100%;
+  }
+  .subscribe-form {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+  }
+  .brand-col, .newsletter-col {
+    grid-column: span 1;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .legal-links {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

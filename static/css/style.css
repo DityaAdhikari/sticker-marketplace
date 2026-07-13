@@ -1,3 +1,236 @@
-h1{
-    color:aqua;
+/* Styling Configurations */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: #0b0b0b;
+  color: #ffffff;
+  padding: 40px 20px;
+}
+
+.main-content-wrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* --- FEATURED SECTION HEADER --- */
+.featured-section {
+  margin-bottom: 50px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.view-all-link {
+  color: #ff4500;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.view-all-link:hover {
+  opacity: 0.8;
+}
+
+/* --- STICKERS CARD GRID --- */
+.stickers-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.sticker-card {
+  background-color: #121212;
+  border: 1px solid #1a1a1a;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.sticker-card:hover {
+  transform: translateY(-4px);
+  border-color: #2a2a2a;
+}
+
+.card-img-container {
+  background-color: #161616;
+  border-radius: 12px;
+  padding: 20px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sticker-thumbnail {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  /* Optional slight filter behavior matching custom sticker asset textures */
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+/* Metadata Text Elements */
+.sticker-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.artist-handle {
+  font-size: 11px;
+  color: #777777;
+  margin-bottom: 8px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.star-icon {
+  color: #ff4500;
+  font-size: 11px;
+}
+
+.rating-score {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ff4500;
+}
+
+.review-count {
+  font-size: 11px;
+  color: #555555;
+}
+
+/* Pricing and Cart Buttons */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto; /* Pushes up items if title sizes differ */
+}
+
+.price-tag {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ff4500;
+}
+
+.add-to-cart-btn {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  color: #ff4500;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #ff4500;
+  color: #ffffff;
+  border-color: #ff4500;
+}
+
+/* --- LOWER VALUE PROPS BAR --- */
+.features-bar {
+  background-color: #0c0c0c;
+  border: 1px solid #141414;
+  border-radius: 16px;
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.prop-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.prop-icon-wrapper {
+  font-size: 24px;
+  color: #ff4500;
+  margin-top: 2px;
+}
+
+.prop-text-content h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.prop-text-content p {
+  font-size: 11px;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.prop-divider {
+  width: 1px;
+  height: 40px;
+  background-color: #1a1a1a;
+}
+
+/* --- RESPONSIVE ADAPTATIONS --- */
+@media (max-width: 1200px) {
+  .stickers-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .features-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 25px;
+  }
+  .prop-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .stickers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stickers-grid {
+    grid-template-columns: 1fr;
+  }
 }

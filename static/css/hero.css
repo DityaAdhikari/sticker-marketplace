@@ -1,0 +1,426 @@
+/* Base Layout Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial Black', Impact, sans-serif; /* Fallbacks mimic heavy headings */
+}
+
+body {
+  background-color: #0b0b0b;
+  color: #ffffff;
+  padding: 40px 20px;
+}
+
+/* Container limits width and draws background details */
+.hero-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  /* Add subtle background sketch art watermark representation here if desired */
+  background-image: linear-gradient(rgba(11, 11, 11, 0.9), rgba(11, 11, 11, 0.95));
+}
+
+.hero-content-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 60px 40px;
+}
+
+/* Left Content Styles */
+.hero-left {
+  flex: 1;
+  max-width: 600px;
+}
+
+.hero-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff4500;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.hero-heading {
+  font-size: 46px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 25px;
+  font-weight: 900;
+}
+
+.hero-heading .highlight {
+  color: #ff4500;
+}
+
+.hero-description {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  color: #aaaaaa;
+  line-height: 1.6;
+  margin-bottom: 35px;
+  max-width: 480px;
+}
+
+/* Call To Actions */
+.hero-cta-group {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.btn {
+  padding: 14px 28px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #ff4500;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #e03d00;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: white;
+  border: 1px solid #333333;
+}
+
+.btn-secondary:hover {
+  border-color: #ff4500;
+  background-color: rgba(255, 69, 0, 0.05);
+}
+
+/* Social proof / Avatars */
+.hero-supporters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-group {
+  display: flex;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #0b0b0b;
+  margin-right: -10px;
+  object-fit: cover;
+}
+
+.supporters-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #888888;
+}
+
+.heart {
+  color: #ff4500;
+}
+
+
+/* Right Content: Overlapping Sticker Stack Canvas Base */
+.hero-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 500px; /* Increased slightly to accommodate your custom stickers */
+}
+
+/* Container that bounds the stickers */
+.sticker-collage {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 420px;
+}
+
+/* Global rule for ALL stickers to prevent them from breaking the grid */
+.sticker-img {
+  position: absolute;
+  border-radius: 16px;
+  background-color: #fff; /* Ensures white boundary background if images don't have built-in padding */
+  border: 4px solid #ffffff; /* Gives the classic white sticker boundary look */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  object-fit: contain;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), z-index 0.1s ease;
+}
+
+/* Individual Position and Size Control */
+
+/* 1. White Round Overthinker (Top Left) */
+.sticker-overthinker {
+  width: 170px;
+  height: auto;
+  top: 5%;
+  left: 5%;
+  z-index: 2;
+  transform: rotate(-6deg);
+}
+
+/* 2. Glasses "Burn Madafaka" Cat (Top Center/Right) */
+.sticker-burn-cat {
+  width: 165px;
+  height: auto;
+  top: 0%;
+  left: 42%;
+  z-index: 3;
+  transform: rotate(4deg);
+}
+
+/* 3. Cat On Fire (Far Right) */
+.sticker-fire {
+  width: 155px;
+  height: auto;
+  top: 15%;
+  right: -5%;
+  z-index: 1;
+  transform: rotate(12deg);
+}
+
+/* 4. Cat with Fan (Bottom Center Left) */
+.sticker-fan {
+  width: 180px;
+  height: auto;
+  bottom: -5%;
+  left: 10%;
+  z-index: 5;
+  transform: rotate(-4deg);
+}
+
+/* 5. "I Am Sorry" Sad Cat (Bottom Right) */
+.sticker-sorry {
+  width: 160px;
+  height: auto;
+  bottom: 0%;
+  right: 5%;
+  z-index: 4;
+  transform: rotate(5deg);
+}
+
+/* Interactive Hover state to pop stickers forward */
+.sticker-img:hover {
+  transform: scale(1.12) rotate(0deg) !important;
+  z-index: 20 !important;
+  cursor: pointer;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+}
+
+/* Right Content: Overlapping Sticker Stack Canvas */
+.hero-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 450px;
+}
+
+.sticker-collage {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 400px;
+}
+
+.sticker-img {
+  position: absolute;
+  border-radius: 12px;
+  border: 4px solid #ffffff; /* Gives the classic crisp cut sticker white outline border look */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, z-index 0.1s;
+}
+
+/* Specific position cluster layouts mimicking reference image stacking hierarchy */
+.sticker-temple {
+  top: 10%;
+  left: 5%;
+  z-index: 2;
+  transform: rotate(-5deg);
+}
+
+.sticker-eyes {
+  top: -5%;
+  right: 15%;
+  z-index: 1;
+  transform: rotate(3deg);
+}
+
+.sticker-mask {
+  bottom: 5%;
+  left: 40%;
+  z-index: 4;
+  transform: rotate(1deg);
+}
+
+.sticker-scenic {
+  top: 20%;
+  right: -5%;
+  z-index: 3;
+  transform: rotate(8deg);
+}
+
+.sticker-street {
+  bottom: 0px;
+  right: 5%;
+  z-index: 2;
+  transform: rotate(-4deg);
+}
+
+/* Hover dynamic interactions to bring stickers forward */
+.sticker-img:hover {
+  transform: scale(1.08) rotate(0deg) !important;
+  z-index: 10 !important;
+  cursor: grab;
+}
+
+/* --- CATEGORIES SHELF LAYOUT --- */
+.categories-shelf {
+  background-color: #121212;
+  border: 1px solid #1a1a1a;
+  border-radius: 24px;
+  padding: 30px;
+  margin-top: 20px;
+}
+
+.shelf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.shelf-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.view-all-link {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #ff4500;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Flex Grid Category Layout */
+.categories-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  overflow-x: auto; /* Handles overflowing categories on small devices safely */
+  padding-bottom: 10px;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.category-card span {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  color: #888888;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.icon-circle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid #222222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #888888;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover States */
+.category-card:hover .icon-circle {
+  border-color: #ff4500;
+  color: #ffffff;
+  transform: translateY(-3px);
+}
+
+.category-card:hover span {
+  color: #ffffff;
+}
+
+/* Highlighted Active Category State */
+.category-card.active .icon-circle {
+  border-color: #ff4500;
+  background-color: rgba(255, 69, 0, 0.05);
+  color: #ff4500;
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.2);
+}
+
+.category-card.active span {
+  color: #ff4500;
+  font-weight: 600;
+}
+
+/* RESPONSIVE BREAKPOINTS */
+@media(max-width: 992px) {
+  .hero-content-wrapper {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .hero-left {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-description {
+    max-width: 100%;
+  }
+  .sticker-collage {
+    max-width: 400px;
+    height: 350px;
+  }
+}
+
+@media(max-width: 600px) {
+  .hero-heading {
+    font-size: 32px;
+  }
+  .categories-grid {
+    justify-content: flex-start;
+  }
+}
