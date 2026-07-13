@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StickerNest Header</title>
+  <link rel="stylesheet" href="/static/css/nav.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="nav-logo">
+      <div class="logo-text">Sticker<span>Nest</span> <i class="fa-solid fa-hand-holding-heart logo-icon"></i></div>
+      <div class="logo-subtext">Stickers from the street of KTM artist</div>
+    </div>
+
+    <div class="nav-search">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" placeholder="Search stickers, artists, categories...">
+    </div>
+
+    <nav class="nav-links">
+      <a href="#" class="nav-item active">Home</a>
+      <a href="#" class="nav-item">Shop</a>
+      <div class="nav-item dropdown">
+        <span>Categories <i class="fa-solid fa-chevron-down dropdown-arrow"></i></span>
+        </div>
+      <a href="#" class="nav-item">Artists</a>
+      <a href="#" class="nav-item">About</a>
+      <a href="#" class="nav-item">Contact</a>
+    </nav>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-actions">
+      <div class="action-item" id="wishlist-btn">
+        <div class="icon-wrapper">
+          <i class="fa-regular fa-heart"></i>
+          <span class="badge">0</span>
+        </div>
+        <span class="action-label">Wishlist</span>
+      </div>
+
+      <div class="action-item" id="cart-btn">
+        <div class="icon-wrapper cart-icon-bg">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="badge">0</span>
+        </div>
+        <span class="action-label">Cart</span>
+      </div>
+
+      <div class="action-item" id="login-btn">
+        <i class="fa-regular fa-user user-icon"></i>
+        <span class="action-label">Login</span>
+      </div>
+    </div>
+  </header>
+
+  <script src="main.js"></script>
+</body>
+</html>
