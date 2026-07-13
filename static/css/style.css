@@ -6,7 +6,7 @@
   margin: 0 auto;
   padding: 3rem 1rem;
   color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Clean baseline font */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* ==========================================================================
@@ -59,8 +59,9 @@
    ========================================================================== */
 .stickers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+  /* Suggestion 5: Made cards wider using auto-fit and a 340px base, with 30px gaps */
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 30px;
 }
 
 .sticker-card {
@@ -68,23 +69,27 @@
   border: 1px solid #252525;
   border-radius: 18px;
   overflow: hidden;
+  /* Suggestion 2: Standardized flex configuration to ensure uniform heights */
   display: flex;
   flex-direction: column;
-  transition: .3s ease;
+  height: 100%;
   position: relative;
+  transition: .3s ease;
 }
 
+/* Suggestion 6: Enhanced, smoother vertical hover shift and dynamic shadow expansion */
 .sticker-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px);
   border-color: #ff4500;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, .35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .45);
 }
 
 /* Image Wrapper & Wishlist */
 .card-image-wrapper {
   position: relative;
   background: #1b1b1b;
-  padding-top: 100%; /* Keeps a perfect square ratio */
+  /* Suggestion 1: Reduced height to a 4:3 widescreen aspect ratio */
+  padding-top: 75%;
 }
 
 .feature_product {
@@ -93,7 +98,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1.5rem;
+  /* Suggestion 4: Balanced internal breathing space */
+  padding: 20px;
 }
 
 .product-img {
@@ -129,7 +135,7 @@
   color: white;
 }
 
-/* Card Metadata Inner spacing */
+/* Card Metadata */
 .card-meta {
   padding: 1.5rem;
   display: flex;
@@ -176,12 +182,13 @@
   color: #777;
 }
 
-/* Action Row (Price & Button placement) */
+/* Action Row (Price & Button) */
+/* Suggestion 3: Aligned layout across columns using auto margins */
 .card-action-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto; /* Aligns row items precisely across cards */
+  margin-top: auto;
 }
 
 .currency-price {
