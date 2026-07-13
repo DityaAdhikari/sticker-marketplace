@@ -1,236 +1,260 @@
-/* Styling Configurations */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-body {
-  background-color: #0b0b0b;
-  color: #ffffff;
-  padding: 40px 20px;
-}
-
-.main-content-wrapper {
+/* ==========================================================================
+   Page Wrapper & Base Setup
+   ========================================================================== */
+.page-wrapper {
   max-width: 1300px;
   margin: 0 auto;
+  padding: 3rem 1rem;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Clean baseline font */
 }
 
-/* --- FEATURED SECTION HEADER --- */
+/* ==========================================================================
+   1. Featured Section & Headers
+   ========================================================================== */
 .featured-section {
-  margin-bottom: 50px;
+  margin-bottom: 4rem;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #222;
+  padding-bottom: 1rem;
 }
 
 .section-title {
-  font-size: 20px;
+  font-size: 2rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  color: #ffffff;
+  margin: 0;
 }
 
 .view-all-link {
   color: #ff4500;
   text-decoration: none;
-  font-size: 13px;
   font-weight: 600;
+  transition: .3s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: opacity 0.2s;
 }
 
 .view-all-link:hover {
-  opacity: 0.8;
+  color: #ff6b35;
 }
 
-/* --- STICKERS CARD GRID --- */
+.view-all-link i {
+  margin-left: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.view-all-link:hover i {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   2. Stickers Grid & Cards
+   ========================================================================== */
 .stickers-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
 }
 
 .sticker-card {
-  background-color: #121212;
-  border: 1px solid #1a1a1a;
-  border-radius: 16px;
-  padding: 14px;
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 18px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  transition: .3s ease;
+  position: relative;
 }
 
 .sticker-card:hover {
-  transform: translateY(-4px);
-  border-color: #2a2a2a;
+  transform: translateY(-6px);
+  border-color: #ff4500;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, .35);
 }
 
-.card-img-container {
-  background-color: #161616;
-  border-radius: 12px;
-  padding: 20px 10px;
+/* Image Wrapper & Wishlist */
+.card-image-wrapper {
+  position: relative;
+  background: #1b1b1b;
+  padding-top: 100%; /* Keeps a perfect square ratio */
+}
+
+.feature_product {
+  position: absolute;
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 12px;
+  padding: 1.5rem;
 }
 
-.sticker-thumbnail {
+.product-img {
   max-width: 100%;
-  height: auto;
+  max-height: 100%;
   object-fit: contain;
-  /* Optional slight filter behavior matching custom sticker asset textures */
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
 }
 
-/* Metadata Text Elements */
-.sticker-title {
-  font-size: 14px;
+.wishlist-toggle-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(35, 35, 35, .9);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: .3s ease;
+}
+
+.wishlist-toggle-btn:hover {
+  background: #ff4500;
+}
+
+.wishlist-toggle-btn.liked {
+  background: #ff4500;
+  color: white;
+}
+
+/* Card Metadata Inner spacing */
+.card-meta {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.product-name {
+  font-size: 1.2rem;
   font-weight: 600;
   color: #ffffff;
-  margin-bottom: 2px;
+  margin: 0 0 0.35rem 0;
 }
 
-.artist-handle {
-  font-size: 11px;
-  color: #777777;
-  margin-bottom: 8px;
+.artist-attribution {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0 0 1rem 0;
 }
 
-.rating-row {
+.artist-name {
+  color: #bdbdbd;
+}
+
+/* Rating Block */
+.rating-block {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 14px;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
 }
 
-.star-icon {
+.rating-block .fa-star {
   color: #ff4500;
-  font-size: 11px;
 }
 
-.rating-score {
-  font-size: 12px;
-  font-weight: bold;
+.rating-value {
   color: #ff4500;
+  font-weight: 700;
 }
 
 .review-count {
-  font-size: 11px;
-  color: #555555;
+  color: #777;
 }
 
-/* Pricing and Cart Buttons */
-.card-footer {
+/* Action Row (Price & Button placement) */
+.card-action-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto; /* Pushes up items if title sizes differ */
+  margin-top: auto; /* Aligns row items precisely across cards */
 }
 
-.price-tag {
-  font-size: 15px;
+.currency-price {
+  color: #ff4500;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #ff4500;
 }
 
-.add-to-cart-btn {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  color: #ff4500;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+.primary-add-btn {
+  background: #ff4500;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: .75rem 1.25rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.add-to-cart-btn:hover {
-  background-color: #ff4500;
-  color: #ffffff;
-  border-color: #ff4500;
-}
-
-/* --- LOWER VALUE PROPS BAR --- */
-.features-bar {
-  background-color: #0c0c0c;
-  border: 1px solid #141414;
-  border-radius: 16px;
-  padding: 24px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-}
-
-.prop-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  flex: 1;
-}
-
-.prop-icon-wrapper {
-  font-size: 24px;
-  color: #ff4500;
-  margin-top: 2px;
-}
-
-.prop-text-content h4 {
-  font-size: 13px;
+  gap: .5rem;
+  font-size: .9rem;
   font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 4px;
+  cursor: pointer;
+  transition: .3s ease;
 }
 
-.prop-text-content p {
-  font-size: 11px;
-  color: #666666;
-  line-height: 1.4;
+.primary-add-btn:hover {
+  background: #ff6b35;
 }
 
-.prop-divider {
-  width: 1px;
-  height: 40px;
-  background-color: #1a1a1a;
+/* ==========================================================================
+   3. Benefits Section
+   ========================================================================== */
+.benefits-section {
+  background: #111111;
+  border: 1px solid #222;
+  border-radius: 18px;
+  padding: 3rem 2rem;
 }
 
-/* --- RESPONSIVE ADAPTATIONS --- */
-@media (max-width: 1200px) {
-  .stickers-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2.5rem;
 }
 
-@media (max-width: 992px) {
-  .features-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 25px;
-  }
-  .prop-divider {
-    display: none;
-  }
+.benefit-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-@media (max-width: 768px) {
-  .stickers-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.benefit-icon-box {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 69, 0, .12);
+  color: #ff4500;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.6rem;
+  margin-bottom: 1.25rem;
 }
 
-@media (max-width: 480px) {
-  .stickers-grid {
-    grid-template-columns: 1fr;
-  }
+.benefit-card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+}
+
+.benefit-card p {
+  font-size: 0.9rem;
+  color: #999;
+  line-height: 1.6;
+  margin: 0;
 }

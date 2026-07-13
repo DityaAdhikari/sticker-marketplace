@@ -94,3 +94,53 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+//products
+document.addEventListener('DOMContentLoaded', () => {
+  
+  // Handle [♥] Wishlist Button Toggles
+  const wishlistButtons = document.querySelectorAll('.wishlist-toggle-btn');
+  
+  wishlistButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Avoid card click conflicts
+      
+      const icon = btn.querySelector('i');
+      btn.classList.toggle('liked');
+      
+      if (btn.classList.contains('liked')) {
+        icon.className = 'fa-solid fa-heart';
+        console.log("Added item to data-wishlist layer.");
+      } else {
+        icon.className = 'fa-regular fa-heart';
+        console.log("Removed item from data-wishlist layer.");
+      }
+    });
+  });
+
+  // Handle [Add to Cart] Button Dispatches
+  const addToCartButtons = document.querySelectorAll('.primary-add-btn');
+  
+  addToCartButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      const card = btn.closest('.sticker-card');
+      const productId = card.getAttribute('data-id');
+      const productName = card.querySelector('.product-name').textContent;
+      
+      console.log(`Dispatched: ${productName} (ID: ${productId}) targeted to basket pipeline.`);
+      
+      // Fast temporary animation feedback trigger
+      const originalContent = btn.innerHTML;
+      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Added`;
+      btn.style.backgroundColor = '#ff4500';
+      btn.style.color = '#fff';
+      
+      setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+      }, 1000);
+    });
+  });
+});
