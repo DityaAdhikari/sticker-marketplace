@@ -1,0 +1,54 @@
+
+<section class="header">
+  <header class="navbar">
+    <div class="nav-logo">
+      <div class="logo-text">Sticker<span>Nest</span> <i class="fa-solid fa-hand-holding-heart logo-icon"></i></div>
+      <div class="logo-subtext">Stickers from the street of KTM artist</div>
+    </div>
+
+    <form class="nav-search" action="{{ url_for('search') }}" method="GET">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" name="q" placeholder="Search stickers, artists, categories...">
+    </form>
+
+    <nav class="nav-links">
+      <a href="{{ url_for('home') }}" class="nav-item {{ 'active' if request.endpoint == 'home' }}">Home</a>
+      <a href="{{ url_for('shop') }}" class="nav-item {{ 'active' if request.endpoint == 'shop' }}">Shop</a>
+      <div class="nav-item dropdown">
+        <span>Categories <i class="fa-solid fa-chevron-down dropdown-arrow"></i></span>
+      </div>
+      <a href="{{ url_for('artists') }}" class="nav-item {{ 'active' if request.endpoint == 'artists' }}">Artists</a>
+      <a href="{{ url_for('about') }}" class="nav-item {{ 'active' if request.endpoint == 'about' }}">About</a>
+      <a href="{{ url_for('contact') }}" class="nav-item {{ 'active' if request.endpoint == 'contact' }}">Contact</a>
+    </nav>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-actions">
+      <div class="action-item" id="wishlist-btn">
+        <div class="icon-wrapper">
+          <i class="fa-regular fa-heart"></i>
+          <span class="badge">0</span>
+        </div>
+        <span class="action-label">Wishlist</span>
+      </div>
+
+      <div class="action-item" id="cart-btn">
+        <div class="icon-wrapper cart-icon-bg">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="badge">0</span>
+        </div>
+        <span class="action-label">Cart</span>
+      </div>
+
+      <a href="{{ url_for('login') }}" class="action-item" id="login-btn">
+        <i class="fa-regular fa-user user-icon"></i>
+        <span class="action-label">Login</span>
+      </a>
+
+      <div class="mobile-menu-toggle" id="mobile-toggle">
+        <i class="fa-solid fa-bars"></i>
+      </div>
+    </div>
+  </header>
+</section>

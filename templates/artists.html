@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Artists - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/artists.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="page-wrapper">
+  <section class="artists-section">
+    <div class="section-header">
+      <h2 class="section-title">Kathmandu Street Creators</h2>
+    </div>
+
+    <div class="artists-grid">
+      {% for artist in artists %}
+      <div class="artist-card">
+        <div class="artist-avatar-wrapper">
+          <img src="{{ url_for('static', filename='images/' + artist.avatar) }}" alt="{{ artist.name }}" class="artist-avatar">
+        </div>
+        <div class="artist-meta">
+          <h3 class="artist-name">{{ artist.handle }}</h3>
+          <p class="artist-bio">{{ artist.bio }}</p>
+          <div class="artist-stats">
+            <span class="stat-item"><strong>{{ artist.stickers | length }}</strong> stickers</span>
+          </div>
+          <a href="#" class="view-profile-btn">View Profile</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+{% endblock %}

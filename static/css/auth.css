@@ -1,0 +1,94 @@
+/* ==========================================================================
+   Auth Pages (Login / Register)
+   ========================================================================== */
+.auth-wrapper {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.auth-card {
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 18px;
+  padding: 2.5rem;
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.auth-subtitle {
+  font-size: 0.9rem;
+  color: #888;
+  text-align: center;
+  margin: 0 0 2rem 0;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: #bdbdbd;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  background: #1b1b1b;
+  border: 1px solid #252525;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: .3s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ff4500;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  background: #ff4500;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .3s ease;
+  margin-top: 0.5rem;
+}
+
+.auth-submit-btn:hover {
+  background: #ff6b35;
+}
+
+.auth-footer-link {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 1.5rem;
+}
+
+.auth-footer-link a {
+  color: #ff4500;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-footer-link a:hover {
+  color: #ff6b35;
+}

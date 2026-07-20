@@ -1,0 +1,39 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Register - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="auth-wrapper">
+  <div class="auth-card">
+    <h2 class="auth-title">Create an Account</h2>
+    <p class="auth-subtitle">Join StickerNest today</p>
+
+    <form action="{{ url_for('register') }}" method="POST">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" name="name" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirm Password</label>
+        <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="auth-submit-btn">Sign Up</button>
+    </form>
+
+    <p class="auth-footer-link">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+  </div>
+</main>
+{% endblock %}

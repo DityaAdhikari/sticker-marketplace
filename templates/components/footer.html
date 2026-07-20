@@ -1,0 +1,98 @@
+
+
+{% block content %}
+<main class="hero-container">
+  <div class="hero-content-wrapper">
+
+    <div class="hero-left">
+      <span class="hero-tagline">
+        <i class="fa-solid fa-paintbrush"></i> Original Sticker Art from Kathmandu
+      </span>
+
+      <h1 class="hero-heading">
+        STICKERS INSPIRED BY THE STREETS OF <span class="highlight">KATHMANDU.</span>
+      </h1>
+
+      <p class="hero-description">
+        Discover unique designs created by local artists and decorate your world with something truly original.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="{{ url_for('shop') }}" class="btn btn-primary">Explore Collection <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="{{ url_for('shop') }}" class="btn btn-secondary">Shop Now</a>
+      </div>
+
+      <div class="hero-supporters">
+        <div class="avatar-group">
+          <img src="{{ url_for('static', filename='images/artist1.jpg') }}" alt="Artist" class="avatar">
+          <img src="{{ url_for('static', filename='images/artist2.jpg') }}" alt="Artist" class="avatar">
+          <img src="{{ url_for('static', filename='images/artist3.jpg') }}" alt="Artist" class="avatar">
+        </div>
+        <p class="supporters-text">Supporting local artists <span class="heart">❤️</span></p>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="sticker-collage">
+        <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="Overthinker Sticker" class="sticker-img sticker-overthinker">
+        <img src="{{ url_for('static', filename='images/catoverthinker.jpg') }}" alt="Glasses Burn Cat Sticker" class="sticker-img sticker-burn-cat">
+        <img src="{{ url_for('static', filename='images/stick it up stickers _ Cat On Fire, Burn Madafaka Sticker.jpg') }}" alt="Cat on Fire Sticker" class="sticker-img sticker-fire">
+        <img src="{{ url_for('static', filename='images/stickers anime 5 Cat Fan Sticker.jpg') }}" alt="Cat with Fan Sticker" class="sticker-img sticker-fan">
+        <img src="{{ url_for('static', filename='images/I Am Sorry Sticker.jpg') }}" alt="Sorry Cat Sticker" class="sticker-img sticker-sorry">
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<section class="categories-shelf">
+  <div class="shelf-header">
+    <h2 class="shelf-title">Shop by Category</h2>
+    <a href="{{ url_for('shop') }}" class="view-all-link">View all categories <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+
+  <div class="categories-grid">
+    {% for category in categories %}
+    <a href="{{ url_for('shop', category=category.name) }}" class="category-card">
+      <div class="icon-circle"><i class="{{ category.icon }}"></i></div>
+      <span>{{ category.name }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="featured-section">
+  <div class="section-header">
+    <h2 class="section-title">Featured Stickers</h2>
+    <a href="{{ url_for('shop') }}" class="view-all-link">View all stickers <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+
+  <div class="stickers-grid">
+    {% for sticker in stickers %}
+    <div class="sticker-card" data-id="{{ sticker.id }}">
+      <div class="card-image-wrapper">
+        <button class="wishlist-toggle-btn" aria-label="Add to wishlist">
+          <i class="fa-regular fa-heart"></i>
+        </button>
+        <div class="feature_product">
+          <img src="{{ url_for('static', filename='images/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
+        </div>
+      </div>
+      <div class="card-meta">
+        <h3 class="product-name">{{ sticker.name }}</h3>
+        <p class="artist-attribution">by <span class="artist-name">{{ sticker.artist.handle }}</span></p>
+        <div class="rating-block">
+          <i class="fa-solid fa-star"></i>
+          <span class="rating-value">{{ sticker.rating }}</span>
+          <span class="review-count">({{ sticker.review_count }})</span>
+        </div>
+        <div class="card-action-row">
+          <span class="currency-price">Rs. {{ sticker.price | int }}</span>
+          <button class="primary-add-btn"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}About Us - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="page-wrapper">
+
+  <section class="featured-section">
+    <div class="section-header">
+      <h2 class="section-title">Our Story</h2>
+    </div>
+
+    <p class="about-intro">
+      StickerNest started as a small idea in the streets of Kathmandu — turning the city's colors,
+      culture, and chaos into stickers you can carry anywhere. Every design on this site is made by
+      a local artist, hand-drawn and digitized with love for the details that make Kathmandu, Kathmandu.
+    </p>
+  </section>
+
+  <section class="benefits-section">
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon-box"><i class="fa-solid fa-palette"></i></div>
+        <h3>Locally Made</h3>
+        <p>Every sticker is designed by an independent artist based in Kathmandu.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon-box"><i class="fa-solid fa-people-group"></i></div>
+        <h3>Supporting Artists</h3>
+        <p>A share of every purchase goes directly back to the artist who made it.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon-box"><i class="fa-solid fa-heart"></i></div>
+        <h3>Made with Love</h3>
+        <p>No mass production — just original art, printed and shipped with care.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon-box"><i class="fa-solid fa-earth-asia"></i></div>
+        <h3>Rooted in Kathmandu</h3>
+        <p>Inspired by the streets, temples, and everyday life of the city we call home.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured-section">
+    <div class="section-header">
+      <h2 class="section-title">Meet Our Artists</h2>
+      <a href="{{ url_for('artists') }}" class="view-all-link">View all artists <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <p class="about-intro">
+      Behind every sticker is a real person — a street artist, illustrator, or designer from Kathmandu
+      who poured hours into a single piece. Explore their profiles and stories on our Artists page.
+    </p>
+  </section>
+
+</main>
+{% endblock %}

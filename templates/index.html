@@ -1,337 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StickerNest Header</title>
-  <link rel="stylesheet" href="/static/css/nav.css">
-  <link rel="stylesheet" href="/static/css/hero.css">
-  <link rel="stylesheet" href="/static/css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-<section class="header">
-  <header class="navbar">
-    <div class="nav-logo">
-      <div class="logo-text">Sticker<span>Nest</span> <i class="fa-solid fa-hand-holding-heart logo-icon"></i></div>
-      <div class="logo-subtext">Stickers from the street of KTM artist</div>
-    </div>
+{% extends 'base.html' %}
 
-    <div class="nav-search">
-      <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" placeholder="Search stickers, artists, categories...">
-    </div>
+{% block title %}Home - StickerNest{% endblock %}
 
-    <nav class="nav-links">
-      <a href="#" class="nav-item active">Home</a>
-      <a href="#" class="nav-item">Shop</a>
-      <div class="nav-item dropdown">
-        <span>Categories <i class="fa-solid fa-chevron-down dropdown-arrow"></i></span>
-        </div>
-      <a href="#" class="nav-item">Artists</a>
-      <a href="#" class="nav-item">About</a>
-      <a href="#" class="nav-item">Contact</a>
-    </nav>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/hero.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+{% endblock %}
 
-    <div class="nav-divider"></div>
+{% block content %}
+<main class="hero-container">
+  <div class="hero-content-wrapper">
 
-    <div class="nav-actions">
-      <div class="action-item" id="wishlist-btn">
-        <div class="icon-wrapper">
-          <i class="fa-regular fa-heart"></i>
-          <span class="badge">0</span>
-        </div>
-        <span class="action-label">Wishlist</span>
+    <div class="hero-left">
+      <span class="hero-tagline">
+        <i class="fa-solid fa-paintbrush"></i> Original Sticker Art from Kathmandu
+      </span>
+
+      <h1 class="hero-heading">
+        STICKERS INSPIRED BY THE STREETS OF <span class="highlight">KATHMANDU.</span>
+      </h1>
+
+      <p class="hero-description">
+        Discover unique designs created by local artists and decorate your world with something truly original.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="{{ url_for('shop') }}" class="btn btn-primary">Explore Collection <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="{{ url_for('shop') }}" class="btn btn-secondary">Shop Now</a>
       </div>
 
-      <div class="action-item" id="cart-btn">
-        <div class="icon-wrapper cart-icon-bg">
-          <i class="fa-solid fa-cart-shopping"></i>
-          <span class="badge">0</span>
+      <div class="hero-supporters">
+        <div class="avatar-group">
+          <img src="{{ url_for('static', filename='images/artist1.jpg') }}" alt="Artist" class="avatar">
+          <img src="{{ url_for('static', filename='images/artist2.jpg') }}" alt="Artist" class="avatar">
+          <img src="{{ url_for('static', filename='images/artist3.jpg') }}" alt="Artist" class="avatar">
         </div>
-        <span class="action-label">Cart</span>
-      </div>
-
-      <div class="action-item" id="login-btn">
-        <i class="fa-regular fa-user user-icon"></i>
-        <span class="action-label">Login</span>
-      </div>
-
-      <div class="mobile-menu-toggle" id="mobile-toggle">
-        <i class="fa-solid fa-bars"></i>
+        <p class="supporters-text">Supporting local artists <span class="heart">❤️</span></p>
       </div>
     </div>
-     </header>
-    <main class="hero-container">
-    <div class="hero-content-wrapper">
-      
-      <div class="hero-left">
-        <span class="hero-tagline">
-          <i class="fa-solid fa-paintbrush"></i> Original Sticker Art from Kathmandu
-        </span>
-        
-        <h1 class="hero-heading">
-          STICKERS INSPIRED BY THE STREETS OF <span class="highlight">KATHMANDU.</span>
-        </h1>
-        
-        <p class="hero-description">
-          Discover unique designs created by local artists and decorate your world with something truly original.
-        </p>
-        
-        <div class="hero-cta-group">
-          <button class="btn btn-primary" id="btn-explore">Explore Collection <i class="fa-solid fa-arrow-right"></i></button>
-          <button class="btn btn-secondary" id="btn-shop">Shop Now</button>
-        </div>
-        
-        <div class="hero-supporters">
-          <div class="avatar-group">
-            <img src="https://via.placeholder.com/40" alt="Artist 1" class="avatar">
-            <img src="https://via.placeholder.com/40" alt="Artist 2" class="avatar">
-            <img src="https://via.placeholder.com/40" alt="Artist 3" class="avatar">
-          </div>
-          <p class="supporters-text">Supporting local artists <span class="heart">❤️</span></p>
-        </div>
-      </div>
 
     <div class="hero-right">
-  <div class="sticker-collage">
-    <img src="/static/images/cat.jpg" alt="Overthinker Sticker" class="sticker-img sticker-overthinker">
-    <img src="/static/images/catoverthinker.jpg" alt="Glasses Burn Cat Sticker" class="sticker-img sticker-burn-cat">
-    <img src="/static/images/stick it up stickers _ Cat On Fire, Burn Madafaka Sticker.jpg" alt="Cat on Fire Sticker" class="sticker-img sticker-fire">
-    <img src="/static/images/stickers anime 5 Cat Fan Sticker.jpg" alt="Cat with Fan Sticker" class="sticker-img sticker-fan">
-    <img src="/static/images/I Am Sorry Sticker.jpg" alt="Sorry Cat Sticker" class="sticker-img sticker-sorry">
-  </div>
-</div>
-      
+      <div class="sticker-collage">
+        <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="Overthinker Sticker" class="sticker-img sticker-overthinker">
+        <img src="{{ url_for('static', filename='images/catoverthinker.jpg') }}" alt="Glasses Burn Cat Sticker" class="sticker-img sticker-burn-cat">
+        <img src="{{ url_for('static', filename='images/stick it up stickers _ Cat On Fire, Burn Madafaka Sticker.jpg') }}" alt="Cat on Fire Sticker" class="sticker-img sticker-fire">
+        <img src="{{ url_for('static', filename='images/stickers anime 5 Cat Fan Sticker.jpg') }}" alt="Cat with Fan Sticker" class="sticker-img sticker-fan">
+        <img src="{{ url_for('static', filename='images/I Am Sorry Sticker.jpg') }}" alt="Sorry Cat Sticker" class="sticker-img sticker-sorry">
+      </div>
     </div>
-     </section>
-    <section class="categories-shelf">
-      <div class="shelf-header">
-        <h2 class="shelf-title">Shop by Category</h2>
-        <a href="#" class="view-all-link">View all categories <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-
-      <div class="categories-grid">
-        <div class="category-card" data-category="anime">
-          <div class="icon-circle"><i class="fa-solid fa-mask"></i></div>
-          <span>Anime</span>
-        </div>
-        <div class="category-card" data-category="gaming">
-          <div class="icon-circle"><i class="fa-solid fa-gamepad"></i></div>
-          <span>Gaming</span>
-        </div>
-        <div class="category-card" data-category="nature">
-          <div class="icon-circle"><i class="fa-solid fa-leaf"></i></div>
-          <span>Nature</span>
-        </div>
-        <div class="category-card active" data-category="kathmandu">
-          <div class="icon-circle"><i class="fa-solid fa-gopuram"></i></div>
-          <span>Kathmandu</span>
-        </div>
-        <div class="category-card" data-category="minimal">
-          <div class="icon-circle"><i class="fa-solid fa-circle-notch"></i></div>
-          <span>Minimal</span>
-        </div>
-        <div class="category-card" data-category="quotes">
-          <div class="icon-circle"><i class="fa-solid fa-quote-left"></i></div>
-          <span>Quotes</span>
-        </div>
-        <div class="category-card" data-category="pop-culture">
-          <div class="icon-circle"><i class="fa-solid fa-skull-crossbones"></i></div>
-          <span>Pop Culture</span>
-        </div>
-        <div class="category-card" data-category="animals">
-          <div class="icon-circle"><i class="fa-solid fa-paw"></i></div>
-          <span>Animals</span>
-        </div>
-        <div class="category-card" data-category="travel">
-          <div class="icon-circle"><i class="fa-solid fa-plane"></i></div>
-          <span>Travel</span>
-        </div>
-        <div class="category-card" data-category="all">
-          <div class="icon-circle"><i class="fa-solid fa-table-cells-large"></i></div>
-          <span>All Stickers</span>
-        </div>
-      </div>
-    </section>
-
-    <div class="page-wrapper">
-    
-    <section class="featured-section">
-      <div class="section-header">
-        <h2 class="section-title">Featured Stickers</h2>
-        <a href="#" class="view-all-link">View All <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-
-      <div class="stickers-grid">
-        
-        <div class="sticker-card" data-id="101">
-          <div class="card-image-wrapper">
-            <button class="wishlist-toggle-btn" aria-label="Add to wishlist">
-              <i class="fa-regular fa-heart"></i>
-            </button>
-             <div class="feature_product">
-            <img src="/static/images/cat.jpg" alt="Cool Cat Sticker" class="product-img">
-            </div>
-          </div>
-          
-          <div class="card-meta">
-            <h3 class="product-name">Cool Cat</h3>
-            <p class="artist-attribution">by <span class="artist-name">@art_by_san</span></p>
-            
-            <div class="rating-block">
-              <i class="fa-solid fa-star"></i>
-              <span class="rating-value">4.8</span>
-              <span class="review-count">(120)</span>
-            </div>
-            
-            <div class="card-action-row">
-              <span class="currency-price">Rs. 199</span>
-              <button class="primary-add-btn">
-                <i class="fa-solid fa-cart-plus"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="sticker-card" data-id="102">
-          <div class="card-image-wrapper">
-            <button class="wishlist-toggle-btn liked" aria-label="Remove from wishlist">
-              <i class="fa-solid fa-heart"></i>
-            </button>
-            <div class="feature_product">
-            <img src="/static/images/I Am Sorry Sticker.jpg" alt="Sorry Cat Sticker" class="product-img">
-            </div>
-          </div>
-          <div class="card-meta">
-            <h3 class="product-name">I Am Sorry</h3>
-            <p class="artist-attribution">by <span class="artist-name">@void.creates</span></p>
-            <div class="rating-block">
-              <i class="fa-solid fa-star"></i>
-              <span class="rating-value">5.0</span>
-              <span class="review-count">(45)</span>
-            </div>
-            <div class="card-action-row">
-              <span class="currency-price">Rs. 149</span>
-              <button class="primary-add-btn">
-                <i class="fa-solid fa-cart-plus"></i> Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <section class="benefits-section">
-      <div class="benefits-grid">
-        
-        <div class="benefit-card">
-          <div class="benefit-icon-box"><i class="fa-solid fa-palette"></i></div>
-          <h3>Original Artists</h3>
-          <p>Every purchase directly supports independent creators across Nepal.</p>
-        </div>
-
-        <div class="benefit-card">
-          <div class="benefit-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
-          <h3>Premium Quality</h3>
-          <p>Thick, durable vinyl cuts that are water-resistant and built to fade-proof standards.</p>
-        </div>
-
-        <div class="benefit-card">
-          <div class="benefit-icon-box"><i class="fa-solid fa-truck-fast"></i></div>
-          <h3>Fast Delivery</h3>
-          <p>Quick inside-valley logistics and reliable shipping straight to your desktop setup.</p>
-        </div>
-
-        <div class="benefit-card">
-          <div class="benefit-icon-box"><i class="fa-solid fa-lock"></i></div>
-          <h3>Secure Payments</h3>
-          <p>100% encrypted checkouts through trusted local payment gateways.</p>
-        </div>
-
-      </div>
-    </section>
 
   </div>
-    <link rel="stylesheet" href="/static/css/footer.css">
-<footer class="main-footer">
-    <div class="footer-container">
-      
-      <div class="footer-top">
-        
-        <div class="footer-col brand-col">
-          <div class="footer-logo">
-            Sticker<span>Nest</span> <i class="fa-solid fa-square-rotated logo-diamond"></i>
-          </div>
-          <p class="brand-subtext">Stickers from the street of KTM artist.</p>
-          <p class="brand-desc">Original sticker art by local artists from Kathmandu. Express yourself, one sticker at a time.</p>
-          <div class="social-links">
-            <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
-          </div>
-        </div>
+</main>
 
-        <div class="footer-col">
-          <h3 class="col-title">Shop</h3>
-          <ul class="col-links">
-            <li><a href="#">All Stickers</a></li>
-            <li><a href="#">New Arrivals</a></li>
-            <li><a href="#">Best Sellers</a></li>
-            <li><a href="#">Categories</a></li>
-            <li><a href="#">Gift Cards</a></li>
-          </ul>
-        </div>
+<section class="categories-shelf">
+  <div class="shelf-header">
+    <h2 class="shelf-title">Shop by Category</h2>
+    <a href="{{ url_for('shop') }}" class="view-all-link">View all categories <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
 
-        <div class="footer-col">
-          <h3 class="col-title">Company</h3>
-          <ul class="col-links">
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Artists</a></li>
-            <li><a href="#">Our Story</a></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
+  <div class="categories-grid">
+    {% for category in categories %}
+    <a href="{{ url_for('shop', category=category.name) }}" class="category-card">
+      <div class="icon-circle"><i class="{{ category.icon }}"></i></div>
+      <span>{{ category.name }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
 
-        <div class="footer-col">
-          <h3 class="col-title">Help</h3>
-          <ul class="col-links">
-            <li><a href="#">Shipping & Delivery</a></li>
-            <li><a href="#">Returns & Refunds</a></li>
-            <li><a href="#">FAQs</a></li>
-            <li><a href="#">Track Order</a></li>
-            <li><a href="#">Contact Support</a></li>
-          </ul>
-        </div>
+<section class="featured-section">
+  <div class="section-header">
+    <h2 class="section-title">Featured Stickers</h2>
+    <a href="{{ url_for('shop') }}" class="view-all-link">View all stickers <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
 
-        <div class="footer-col newsletter-col">
-          <h3 class="col-title">Stay in the Loop</h3>
-          <p class="newsletter-text">Get updates on new stickers, artists and exclusive offers.</p>
-          <form class="subscribe-form" id="newsletter-form">
-            <input type="email" placeholder="Enter your email" required id="newsletter-input">
-            <button type="submit" class="btn-subscribe">Subscribe</button>
-          </form>
-        </div>
-
-      </div>
-
-      <div class="footer-bottom">
-        <p class="copyright-text">&copy; 2025 StickerNest. All rights reserved.</p>
-        <div class="legal-links">
-          <a href="#">Privacy Policy</a>
-          <span class="dot-separator"></span>
-          <a href="#">Terms of Service</a>
-          <span class="dot-separator"></span>
-          <a href="#">Refund Policy</a>
+  <div class="stickers-grid">
+    {% for sticker in stickers %}
+    <div class="sticker-card" data-id="{{ sticker.id }}">
+      <div class="card-image-wrapper">
+        <button class="wishlist-toggle-btn" aria-label="Add to wishlist">
+          <i class="fa-regular fa-heart"></i>
+        </button>
+        <div class="feature_product">
+          <img src="{{ url_for('static', filename='images/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
         </div>
       </div>
-
+      <div class="card-meta">
+        <h3 class="product-name">{{ sticker.name }}</h3>
+        <p class="artist-attribution">by <span class="artist-name">{{ sticker.artist.handle }}</span></p>
+        <div class="rating-block">
+          <i class="fa-solid fa-star"></i>
+          <span class="rating-value">{{ sticker.rating }}</span>
+          <span class="review-count">({{ sticker.review_count }})</span>
+        </div>
+        <div class="card-action-row">
+          <span class="currency-price">Rs. {{ sticker.price | int }}</span>
+          <button class="primary-add-btn"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
     </div>
-  </footer>
- 
-
-  <script src="/static/js/main.js"></script>
-</body>
-</html>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
