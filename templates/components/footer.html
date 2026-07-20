@@ -1,98 +1,76 @@
+<footer class="main-footer">
+  <div class="footer-container">
 
+    <div class="footer-top">
 
-{% block content %}
-<main class="hero-container">
-  <div class="hero-content-wrapper">
-
-    <div class="hero-left">
-      <span class="hero-tagline">
-        <i class="fa-solid fa-paintbrush"></i> Original Sticker Art from Kathmandu
-      </span>
-
-      <h1 class="hero-heading">
-        STICKERS INSPIRED BY THE STREETS OF <span class="highlight">KATHMANDU.</span>
-      </h1>
-
-      <p class="hero-description">
-        Discover unique designs created by local artists and decorate your world with something truly original.
-      </p>
-
-      <div class="hero-cta-group">
-        <a href="{{ url_for('shop') }}" class="btn btn-primary">Explore Collection <i class="fa-solid fa-arrow-right"></i></a>
-        <a href="{{ url_for('shop') }}" class="btn btn-secondary">Shop Now</a>
+      <div class="footer-col brand-col">
+        <div class="footer-logo">
+          Sticker<span>Nest</span> <i class="fa-solid fa-square-rotated logo-diamond"></i>
+        </div>
+        <p class="brand-subtext">Stickers from the street of KTM artist.</p>
+        <p class="brand-desc">Original sticker art by local artists from Kathmandu. Express yourself, one sticker at a time.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+        </div>
       </div>
 
-      <div class="hero-supporters">
-        <div class="avatar-group">
-          <img src="{{ url_for('static', filename='images/artist1.jpg') }}" alt="Artist" class="avatar">
-          <img src="{{ url_for('static', filename='images/artist2.jpg') }}" alt="Artist" class="avatar">
-          <img src="{{ url_for('static', filename='images/artist3.jpg') }}" alt="Artist" class="avatar">
-        </div>
-        <p class="supporters-text">Supporting local artists <span class="heart">❤️</span></p>
+      <div class="footer-col">
+        <h3 class="col-title">Shop</h3>
+        <ul class="col-links">
+          <li><a href="{{ url_for('shop') }}">All Stickers</a></li>
+          <li><a href="#">New Arrivals</a></li>
+          <li><a href="#">Best Sellers</a></li>
+          <li><a href="#">Categories</a></li>
+          <li><a href="#">Gift Cards</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="col-title">Company</h3>
+        <ul class="col-links">
+          <li><a href="{{ url_for('about') }}">About Us</a></li>
+          <li><a href="{{ url_for('artists') }}">Artists</a></li>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3 class="col-title">Help</h3>
+        <ul class="col-links">
+          <li><a href="#">Shipping & Delivery</a></li>
+          <li><a href="#">Returns & Refunds</a></li>
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Track Order</a></li>
+          <li><a href="#">Contact Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col newsletter-col">
+        <h3 class="col-title">Stay in the Loop</h3>
+        <p class="newsletter-text">Get updates on new stickers, artists and exclusive offers.</p>
+        <form class="subscribe-form" id="newsletter-form">
+          <input type="email" placeholder="Enter your email" required id="newsletter-input">
+          <button type="submit" class="btn-subscribe">Subscribe</button>
+        </form>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p class="copyright-text">&copy; 2026 StickerNest. All rights reserved.</p>
+      <div class="legal-links">
+        <a href="#">Privacy Policy</a>
+        <span class="dot-separator"></span>
+        <a href="#">Terms of Service</a>
+        <span class="dot-separator"></span>
+        <a href="#">Refund Policy</a>
       </div>
     </div>
 
-    <div class="hero-right">
-      <div class="sticker-collage">
-        <img src="{{ url_for('static', filename='images/cat.jpg') }}" alt="Overthinker Sticker" class="sticker-img sticker-overthinker">
-        <img src="{{ url_for('static', filename='images/catoverthinker.jpg') }}" alt="Glasses Burn Cat Sticker" class="sticker-img sticker-burn-cat">
-        <img src="{{ url_for('static', filename='images/stick it up stickers _ Cat On Fire, Burn Madafaka Sticker.jpg') }}" alt="Cat on Fire Sticker" class="sticker-img sticker-fire">
-        <img src="{{ url_for('static', filename='images/stickers anime 5 Cat Fan Sticker.jpg') }}" alt="Cat with Fan Sticker" class="sticker-img sticker-fan">
-        <img src="{{ url_for('static', filename='images/I Am Sorry Sticker.jpg') }}" alt="Sorry Cat Sticker" class="sticker-img sticker-sorry">
-      </div>
-    </div>
-
   </div>
-</main>
-
-<section class="categories-shelf">
-  <div class="shelf-header">
-    <h2 class="shelf-title">Shop by Category</h2>
-    <a href="{{ url_for('shop') }}" class="view-all-link">View all categories <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-
-  <div class="categories-grid">
-    {% for category in categories %}
-    <a href="{{ url_for('shop', category=category.name) }}" class="category-card">
-      <div class="icon-circle"><i class="{{ category.icon }}"></i></div>
-      <span>{{ category.name }}</span>
-    </a>
-    {% endfor %}
-  </div>
-</section>
-
-<section class="featured-section">
-  <div class="section-header">
-    <h2 class="section-title">Featured Stickers</h2>
-    <a href="{{ url_for('shop') }}" class="view-all-link">View all stickers <i class="fa-solid fa-arrow-right"></i></a>
-  </div>
-
-  <div class="stickers-grid">
-    {% for sticker in stickers %}
-    <div class="sticker-card" data-id="{{ sticker.id }}">
-      <div class="card-image-wrapper">
-        <button class="wishlist-toggle-btn" aria-label="Add to wishlist">
-          <i class="fa-regular fa-heart"></i>
-        </button>
-        <div class="feature_product">
-          <img src="{{ url_for('static', filename='images/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
-        </div>
-      </div>
-      <div class="card-meta">
-        <h3 class="product-name">{{ sticker.name }}</h3>
-        <p class="artist-attribution">by <span class="artist-name">{{ sticker.artist.handle }}</span></p>
-        <div class="rating-block">
-          <i class="fa-solid fa-star"></i>
-          <span class="rating-value">{{ sticker.rating }}</span>
-          <span class="review-count">({{ sticker.review_count }})</span>
-        </div>
-        <div class="card-action-row">
-          <span class="currency-price">Rs. {{ sticker.price | int }}</span>
-          <button class="primary-add-btn"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</section>
-{% endblock %}
+</footer>
