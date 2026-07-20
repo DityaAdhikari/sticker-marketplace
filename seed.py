@@ -1,5 +1,5 @@
 from app import app
-from model import db, Artist, Category, Sticker
+from models import db, Artist, Category, Sticker
 
 with app.app_context():
 
@@ -32,36 +32,18 @@ with app.app_context():
 
     # --- Stickers ---
     stickers = [
-        Sticker(
-            name="Cool Cat", price=199, image="cool_cat.jpg",
-            rating=4.9, review_count=86,
-            artist_id=artists[0].id, category_id=categories[0].id  # Anime
-        ),
-        Sticker(
-            name="Great Wave", price=149, image="great_wave.jpg",
-            rating=4.8, review_count=64,
-            artist_id=artists[1].id, category_id=categories[4].id  # Minimal
-        ),
-        Sticker(
-            name="KTM Streets", price=199, image="ktm_streets.jpg",
-            rating=5.0, review_count=92,
-            artist_id=artists[2].id, category_id=categories[3].id  # Kathmandu
-        ),
-        Sticker(
-            name="Space Drift", price=179, image="space_drift.jpg",
-            rating=4.9, review_count=77,
-            artist_id=artists[3].id, category_id=categories[6].id  # Pop Culture
-        ),
-        Sticker(
-            name="Cozy Fox", price=149, image="cozy_fox.jpg",
-            rating=4.8, review_count=53,
-            artist_id=artists[4].id, category_id=categories[7].id  # Animals
-        ),
-        Sticker(
-            name="Himalaya", price=199, image="himalaya.jpg",
-            rating=4.9, review_count=68,
-            artist_id=artists[5].id, category_id=categories[8].id  # Travel
-        ),
+        Sticker(name="Cool Cat", price=199, image="cool_cat.jpg", rating=4.9, review_count=86,
+                artist_id=artists[0].id, category_id=categories[0].id),
+        Sticker(name="Great Wave", price=149, image="great_wave.jpg", rating=4.8, review_count=64,
+                artist_id=artists[1].id, category_id=categories[4].id),
+        Sticker(name="KTM Streets", price=199, image="ktm_streets.jpg", rating=5.0, review_count=92,
+                artist_id=artists[2].id, category_id=categories[3].id),
+        Sticker(name="Space Drift", price=179, image="space_drift.jpg", rating=4.9, review_count=77,
+                artist_id=artists[3].id, category_id=categories[6].id),
+        Sticker(name="Cozy Fox", price=149, image="cozy_fox.jpg", rating=4.8, review_count=53,
+                artist_id=artists[4].id, category_id=categories[7].id),
+        Sticker(name="Himalaya", price=199, image="himalaya.jpg", rating=4.9, review_count=68,
+                artist_id=artists[5].id, category_id=categories[8].id),
     ]
     db.session.add_all(stickers)
     db.session.commit()

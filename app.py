@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from model import db, Sticker, Artist, Category
+from models import db, Sticker, Artist, Category
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
