@@ -1,9 +1,17 @@
-from flask import Flask, render_template, request
+
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from models import db, Sticker, Artist, Category
 
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, Sticker, Artist, Category
+
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = "stickernest_2026_secret"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/stickernest'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1:3307/stickernest'
+
 db.init_app(app)
 
 @app.context_processor
@@ -12,6 +20,7 @@ def inject_categories():
 
 @app.route("/")
 def home():
+      
     stickers = Sticker.query.limit(6).all()
     categories = Category.query.all()
     return render_template("index.html", stickers=stickers, categories=categories)
@@ -44,15 +53,70 @@ def about():
 def contact():
     return render_template("contact.html")
 
-@app.route("/login")
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+        password = request.form["password"]
+
+        user = User.query.filter_by(email=email).first()
+
+        if user and check_password_hash(user.password_hash, password):
+
+            session["user_id"] = user.id
+            session["user_name"] = user.name
+
+            flash("Welcome back!")
+            return redirect(url_for("home"))
+
+        flash("Invalid email or password.")
+
     return render_template("login.html")
 
-@app.route("/register")
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+@app.route("/register", methods=["GET", "POST"])
 def register():
+
+    if request.method == "POST":
+
+        name = request.form["name"]
+        email = request.form["email"]
+        password = request.form["password"]
+
+        existing_user = User.query.filter_by(email=email).first()
+
+        if existing_user:
+            flash("Email already exists.")
+            return redirect(url_for("register"))
+
+        hashed_password = generate_password_hash(password)
+
+        user = User(
+            name=name,
+            email=email,
+            password_hash=hashed_password
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        flash("Registration successful!")
+
+        return redirect(url_for("login"))
+
     return render_template("register.html")
 
-
+@app.route("/logout")
+def logout():
+    session.clear()          # Remove all session data
+    flash("Logged out successfully!")
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     with app.app_context():

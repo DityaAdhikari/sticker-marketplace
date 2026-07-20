@@ -61,11 +61,23 @@
         </div>
         <span class="action-label">Cart</span>
       </div>
+        {% if session.get("user_id") %}
 
-      <a href="{{ url_for('login') }}" class="action-item" id="login-btn">
-        <i class="fa-regular fa-user user-icon"></i>
+    <span class="action-label">Hi, {{ session.get("user_name") }}</span>
+
+    <a href="{{ url_for('logout') }}" class="action-item">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="action-label">Logout</span>
+    </a>
+
+{% else %}
+
+    <a href="{{ url_for('login') }}" class="action-item">
+        <i class="fa-regular fa-user"></i>
         <span class="action-label">Login</span>
-      </a>
+    </a>
+
+{% endif %}
 
       <div class="mobile-menu-toggle" id="mobile-toggle">
         <i class="fa-solid fa-bars"></i>
