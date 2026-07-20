@@ -1,22 +1,42 @@
-
 <section class="header">
   <header class="navbar">
+    <!-- Logo -->
     <div class="nav-logo">
-      <div class="logo-text">Sticker<span>Nest</span> <i class="fa-solid fa-hand-holding-heart logo-icon"></i></div>
+      <div class="logo-text">
+        Sticker<span>Nest</span> 
+        <i class="fa-solid fa-hand-holding-heart logo-icon"></i>
+      </div>
       <div class="logo-subtext">Stickers from the street of KTM artist</div>
     </div>
 
+    <!-- Search Bar -->
     <form class="nav-search" action="{{ url_for('search') }}" method="GET">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input type="text" name="q" placeholder="Search stickers, artists, categories...">
     </form>
 
+    <!-- Navigation Links -->
     <nav class="nav-links">
       <a href="{{ url_for('home') }}" class="nav-item {{ 'active' if request.endpoint == 'home' }}">Home</a>
-      <a href="{{ url_for('shop') }}" class="nav-item {{ 'active' if request.endpoint == 'shop' }}">Shop</a>
-      <div class="nav-item dropdown">
+      
+      <!-- Shop Link (Only active when endpoint is shop AND no category parameter is selected) -->
+      <a href="{{ url_for('shop') }}" class="nav-item {{ 'active' if request.endpoint == 'shop' and not request.args.get('category') }}">Shop</a>
+      
+      <!-- Categories Dropdown (Active when a category URL parameter exists) -->
+      <div class="nav-item dropdown {{ 'active' if request.args.get('category') }}">
         <span>Categories <i class="fa-solid fa-chevron-down dropdown-arrow"></i></span>
+        <div class="dropdown-menu">
+          <div class="dropdown-menu-inner">
+            {% for category in nav_categories %}
+            <a href="{{ url_for('shop', category=category.name) }}" 
+               class="{{ 'active' if request.args.get('category') == category.name }}">
+              {{ category.name }}
+            </a>
+            {% endfor %}
+          </div>
+        </div>
       </div>
+
       <a href="{{ url_for('artists') }}" class="nav-item {{ 'active' if request.endpoint == 'artists' }}">Artists</a>
       <a href="{{ url_for('about') }}" class="nav-item {{ 'active' if request.endpoint == 'about' }}">About</a>
       <a href="{{ url_for('contact') }}" class="nav-item {{ 'active' if request.endpoint == 'contact' }}">Contact</a>
@@ -24,6 +44,7 @@
 
     <div class="nav-divider"></div>
 
+    <!-- Action Buttons -->
     <div class="nav-actions">
       <div class="action-item" id="wishlist-btn">
         <div class="icon-wrapper">

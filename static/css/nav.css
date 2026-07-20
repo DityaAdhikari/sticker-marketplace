@@ -1,4 +1,6 @@
-/* Navbar Container */
+/* ==========================================================================
+   Navbar Container
+   ========================================================================== */
 .navbar {
   display: flex;
   align-items: center;
@@ -10,7 +12,9 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Logo Styles */
+/* ==========================================================================
+   Logo Styles
+   ========================================================================== */
 .nav-logo {
   display: flex;
   flex-direction: column;
@@ -40,7 +44,9 @@
   margin-top: 2px;
 }
 
-/* Search Bar Styles */
+/* ==========================================================================
+   Search Bar Styles
+   ========================================================================== */
 .nav-search {
   position: relative;
   width: 280px;
@@ -72,7 +78,9 @@
   font-size: 14px;
 }
 
-/* Nav Links Styles */
+/* ==========================================================================
+   Nav Links & Navigation Items
+   ========================================================================== */
 .nav-links {
   display: flex;
   align-items: center;
@@ -92,9 +100,10 @@
 }
 
 .nav-item:hover {
-  color: #ffffff;
+  color: #ff4500;
 }
 
+/* Active status indicator line for standard nav items */
 .nav-item.active {
   color: #ff4500;
 }
@@ -109,11 +118,85 @@
   background-color: #ff4500;
 }
 
+/* ==========================================================================
+   Dropdown Menu Styles
+   ========================================================================== */
+
+   .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding-top: 10px;
+  z-index: 100;
+}
+
+.dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+
+.dropdown-menu-inner {
+  background: #141414;
+  border: 1px solid #252525;
+  border-radius: 12px;
+  padding: 0.5rem 0;
+  min-width: 160px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.dropdown {
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .dropdown-arrow {
   font-size: 10px;
   margin-left: 3px;
 }
 
+
+.dropdown-menu a {
+  display: block;
+  padding: 0.6rem 1.2rem;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-menu a:hover {
+  background: rgba(255, 69, 0, 0.1);
+  color: #ff4500;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Selected/Active Dropdown Styling Fixes */
+.dropdown.active > span {
+  color: #ff4500;
+}
+
+.dropdown-menu a.active {
+  color: #ff4500;
+  background: rgba(255, 69, 0, 0.15);
+  font-weight: 600;
+}
+
+/* Modern CSS fallback: highlight parent if child inside has .active class */
+.dropdown:has(.dropdown-menu a.active) > span {
+  color: #ff4500;
+}
+
+/* ==========================================================================
+   Divider & Right Actions
+   ========================================================================== */
 .nav-divider {
   width: 1px;
   height: 30px;
@@ -133,6 +216,7 @@
   align-items: center;
   cursor: pointer;
   gap: 4px;
+  text-decoration: none;
   transition: opacity 0.3s ease;
 }
 
@@ -159,6 +243,7 @@
 
 .user-icon {
   font-size: 20px;
+  color: #ffffff;
 }
 
 .action-label {
@@ -181,8 +266,8 @@
 }
 
 .cart-icon-bg .badge {
-  top: 15px;
-  right: -8px;
+  top: -5px;
+  right: -5px;
 }
 
 .mobile-menu-toggle {
@@ -193,50 +278,14 @@
   margin-left: 10px;
 }
 
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
 @media (max-width: 992px) {
   .nav-search {
     width: 200px;
   }
   .nav-links {
     gap: 15px;
-  }
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    border-radius: 25px;
-    padding: 12px 20px;
-  }
-
-  .nav-search, .nav-divider, .action-label {
-    display: none;
-  }
-
-  .mobile-menu-toggle {
-    display: block;
-  }
-
-  .nav-links {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 80px;
-    left: 20px;
-    right: 20px;
-    background-color: #121212;
-    border: 1px solid #2a2a2a;
-    border-radius: 20px;
-    padding: 20px;
-    gap: 20px;
-    z-index: 100;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-  }
-
-  .nav-links.show {
-    display: flex;
-  }
-
-  .nav-item.active::after {
-    bottom: -4px;
   }
 }

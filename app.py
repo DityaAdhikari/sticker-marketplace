@@ -6,6 +6,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
+@app.context_processor
+def inject_categories():
+    return dict(nav_categories=Category.query.all())
+
 @app.route("/")
 def home():
     stickers = Sticker.query.limit(6).all()
@@ -47,6 +51,8 @@ def login():
 @app.route("/register")
 def register():
     return render_template("register.html")
+
+
 
 if __name__ == "__main__":
     with app.app_context():
