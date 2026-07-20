@@ -32,17 +32,17 @@ with app.app_context():
 
     # --- Stickers ---
     stickers = [
-        Sticker(name="Cool Cat", price=199, image="cool_cat.jpg", rating=4.9, review_count=86,
+        Sticker(name="Cool Cat", price=199, image="cat.jpg", rating=4.9, review_count=86,
                 artist_id=artists[0].id, category_id=categories[0].id),
-        Sticker(name="Great Wave", price=149, image="great_wave.jpg", rating=4.8, review_count=64,
+        Sticker(name="Great Wave", price=149, image="catoverthinker.jpg", rating=4.8, review_count=64,
                 artist_id=artists[1].id, category_id=categories[4].id),
-        Sticker(name="KTM Streets", price=199, image="ktm_streets.jpg", rating=5.0, review_count=92,
+        Sticker(name="KTM Streets", price=199, image="I Am Sorry Sticker.jpg", rating=5.0, review_count=92,
                 artist_id=artists[2].id, category_id=categories[3].id),
-        Sticker(name="Space Drift", price=179, image="space_drift.jpg", rating=4.9, review_count=77,
+        Sticker(name="Space Drift", price=179, image="stick it up stickers _ Cat On Fire, Burn Madafaka Sticker.jpg", rating=4.9, review_count=77,
                 artist_id=artists[3].id, category_id=categories[6].id),
-        Sticker(name="Cozy Fox", price=149, image="cozy_fox.jpg", rating=4.8, review_count=53,
+        Sticker(name="Cozy Fox", price=149, image="stickers_anime_5_cat_fan_sticker.jpg", rating=4.8, review_count=53,
                 artist_id=artists[4].id, category_id=categories[7].id),
-        Sticker(name="Himalaya", price=199, image="himalaya.jpg", rating=4.9, review_count=68,
+        Sticker(name="Himalaya", price=199, image="cat.jpg", rating=4.9, review_count=68,
                 artist_id=artists[5].id, category_id=categories[8].id),
     ]
     db.session.add_all(stickers)

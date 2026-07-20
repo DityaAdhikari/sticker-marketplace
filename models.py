@@ -4,6 +4,7 @@ from datetime import datetime
 db = SQLAlchemy()
 
 
+
 class Artist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -12,6 +13,8 @@ class Artist(db.Model):
     avatar = db.Column(db.String(200))
 
     stickers = db.relationship('Sticker', backref='artist', lazy=True)
+
+   
 
 
 class Category(db.Model):

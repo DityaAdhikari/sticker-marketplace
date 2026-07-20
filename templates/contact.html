@@ -3,12 +3,14 @@
 {% block title %}Contact Us - StickerNest{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
 {% endblock %}
 
 {% block content %}
 <main class="page-wrapper">
-  <section class="contact-section">
+  <section class="featured-section">
     <div class="section-header">
       <h2 class="section-title">Get in Touch</h2>
     </div>

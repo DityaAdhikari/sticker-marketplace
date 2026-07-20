@@ -2,6 +2,10 @@
 
 {% block title %}Shop - StickerNest{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+{% endblock %}
+
 {% block content %}
 <main class="page-wrapper">
   <section class="featured-section">
