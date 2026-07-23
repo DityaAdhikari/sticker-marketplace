@@ -18,7 +18,6 @@ packaging==26.2
 platformdirs==4.10.0
 pycparser==3.0
 PyMySQL==1.1.1
-python-discovery==1.4.2
 python-dotenv==1.0.1
 SQLAlchemy==2.0.51
 typing_extensions==4.15.0

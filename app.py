@@ -8,7 +8,8 @@ from models import db, User, Sticker, Artist, Category
 import os
 
 app = Flask(__name__)
-app.secret_key = "stickernest_2026_secret"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-fallback-key")
+
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL",
@@ -19,7 +20,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-
+with app.app_context():
+    db.create_all()
 
 @app.context_processor
 def inject_categories():
