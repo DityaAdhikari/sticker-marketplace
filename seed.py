@@ -2,6 +2,8 @@ from app import app
 from models import db, Artist, Category, Sticker
 
 with app.app_context():
+    db.create_all()
+
 
     # --- Categories ---
     categories = [
@@ -49,3 +51,5 @@ with app.app_context():
     db.session.commit()
 
     print("Seed complete: categories, artists, and stickers added.")
+
+   

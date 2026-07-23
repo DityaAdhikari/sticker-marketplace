@@ -5,14 +5,21 @@ from models import db, Sticker, Artist, Category
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Sticker, Artist, Category
-
+import os
 
 app = Flask(__name__)
 app.secret_key = "stickernest_2026_secret"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/stickernest'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1:3307/stickernest'
+
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///database.db"
+)
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+
+
 
 @app.context_processor
 def inject_categories():
