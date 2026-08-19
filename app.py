@@ -10,10 +10,9 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-fallback-key")
 
-
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL",
-    "sqlite:///database.db"
+    "mysql+pymysql://acce69_apple12:adhikari%40567@MYSQL9001.site4now.net:3306/db_acce69_apple12"
 )
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -128,6 +127,5 @@ def logout():
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
+   
     app.run(debug=True)
