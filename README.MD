@@ -63,7 +63,6 @@ The system uses a relational database to store and manage:
 Primary keys and foreign keys are used to maintain relationships and data integrity.
 
 ##  Technologies Used
-
 - **Backend:** Python / Flask
 - **Database:** MySQL
 - **ORM:** SQLAlchemy
@@ -110,11 +109,11 @@ Sales reports and analytics
 Contributors
 Ditya Adhikari
 Sadhana Gautam
-Kendra Pokhrel
+Kendra Pokharel
 ##  Installation
 
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
+git clone <https://github.com/DityaAdhikari/sticker-marketplace.git>
 cd sticker-marketplace
