@@ -1,12 +1,12 @@
 # StickerNest – Sticker Marketplace Management System
 
-##  Overview
+## Overview
 
 StickerNest is a web-based sticker marketplace management system developed as a DBMS project. The system manages users, artists, stickers, categories, shopping carts, and orders through a centralized relational database.
 
 The project demonstrates practical database concepts such as entities, relationships, constraints, CRUD operations, SQL queries, normalization, and transaction management.
 
-##  Objectives
+## Objectives
 
 - Manage users and artists efficiently.
 - Store and manage sticker products and categories.
@@ -15,7 +15,7 @@ The project demonstrates practical database concepts such as entities, relations
 - Allow administrators to manage users, products, categories, and orders.
 - Demonstrate practical database management concepts.
 
-##  Main Modules
+## Main Modules
 
 ### User Management
 - User registration and login
@@ -48,7 +48,7 @@ The project demonstrates practical database concepts such as entities, relations
 - Manage categories
 - Manage orders
 
-##  Database
+## Database
 
 The system uses a relational database to store and manage:
 
@@ -62,7 +62,8 @@ The system uses a relational database to store and manage:
 
 Primary keys and foreign keys are used to maintain relationships and data integrity.
 
-##  Technologies Used
+## Technologies Used
+
 - **Backend:** Python / Flask
 - **Database:** MySQL
 - **ORM:** SQLAlchemy
@@ -88,32 +89,16 @@ Primary keys and foreign keys are used to maintain relationships and data integr
 - Database Security
 - ORM
 
-## sticker-marketplace/
+## Project Structure
+
+```text
+sticker-marketplace/
 │
 ├── app.py
 ├── requirements.txt
-├── README.md
+├── README.MD
 │
 ├── templates/
 ├── static/
 │
 └── instance/
-    └── database.db
-
-Future Improvements
-Online payment integration
-Product reviews and ratings
-Advanced search and filtering
-Inventory management
-Sales reports and analytics
-Contributors
-Ditya Adhikari
-Sadhana Gautam
-Kendra Pokharel
-##  Installation
-
-### 1. Clone the repository
-
-```bash
-git clone <https://github.com/DityaAdhikari/sticker-marketplace.git>
-cd sticker-marketplace

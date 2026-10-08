@@ -62,3 +62,314 @@ a {
 .btn-secondary:hover {
   border-color: var(--color-accent);
 }
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-page {
+    max-width: 1100px;
+    margin: auto;
+    padding: 40px 30px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 30px;
+    border: 1px solid #292929;
+    border-radius: 16px;
+    background: #111;
+}
+
+.profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.default-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ff5a00;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.profile-info h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.username {
+    color: #888;
+    margin: 5px 0;
+}
+
+.bio {
+    color: #ccc;
+}
+
+.location {
+    color: #999;
+}
+
+.edit-profile-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 18px;
+    background: #ff5a00;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+
+
+/* Statistics */
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    padding: 20px;
+    text-align: center;
+    background: #111;
+    border: 1px solid #292929;
+    border-radius: 12px;
+}
+
+.stat-number {
+    display: block;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 14px;
+}
+.profile-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.profile-actions form {
+    margin: 0;
+}
+
+/* Tabs */
+
+.profile-tabs {
+    display: flex;
+    gap: 30px;
+    margin-top: 35px;
+    border-bottom: 1px solid #292929;
+}
+
+.profile-tab {
+    padding: 12px 5px;
+    color: #888;
+    text-decoration: none;
+}
+
+.profile-tab.active {
+    color: white;
+    border-bottom: 2px solid #ff5a00;
+}
+
+
+/* Section */
+
+.profile-section {
+    margin-top: 30px;
+}
+
+.section-heading h2 {
+    margin-bottom: 5px;
+}
+
+.section-heading p {
+    color: #777;
+}
+
+
+/* Empty saved area */
+
+.empty-profile {
+    padding: 60px 20px;
+    text-align: center;
+    border: 1px dashed #333;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.empty-icon {
+    font-size: 35px;
+    color: #ff5a00;
+}
+
+.empty-profile p {
+    color: #777;
+}
+
+.empty-profile a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 18px;
+    background: #ff5a00;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+}
+/* =========================
+   EDIT PROFILE
+========================= */
+
+.edit-profile-card {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+
+    background: #111;
+    border: 1px solid #292929;
+    border-radius: 16px;
+}
+
+.edit-profile-card h1 {
+    margin-bottom: 8px;
+}
+
+.edit-profile-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.edit-profile-card label {
+    margin-top: 12px;
+    color: #ddd;
+}
+
+.edit-profile-card input,
+.edit-profile-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px;
+
+    background: #181818;
+    color: white;
+
+    border: 1px solid #333;
+    border-radius: 8px;
+
+    font-family: inherit;
+}
+
+.edit-profile-card textarea {
+    resize: vertical;
+}
+
+.edit-profile-card input:focus,
+.edit-profile-card textarea:focus {
+    outline: none;
+    border-color: #ff5a00;
+}
+
+.edit-profile-card button {
+    margin-top: 20px;
+    padding: 12px 20px;
+
+    background: #ff5a00;
+    color: white;
+
+    border: none;
+    border-radius: 8px;
+
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.edit-profile-card button:hover {
+    opacity: 0.9;
+}
+
+/* =========================
+   ADMIN ARTIST REQUESTS
+   ========================= */
+
+.admin-page {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.admin-page h1 {
+    margin-bottom: 10px;
+}
+
+.artist-request-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 25px;
+    margin-top: 20px;
+
+    border: 1px solid #333;
+    border-radius: 12px;
+    background: #111;
+}
+
+.artist-request-card h3 {
+    margin-bottom: 8px;
+}
+
+.artist-request-card p {
+    margin: 5px 0;
+    color: #aaa;
+}
+
+.artist-request-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.artist-request-actions button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.artist-request-actions form:first-child button {
+    background: #ff6600;
+    color: white;
+}
+
+.artist-request-actions form:last-child button {
+    background: #333;
+    color: white;
+}
+
+.profile-info {
+    position: relative;
+}
+
+.profile-info > .edit-profile-btn,
+.profile-info > .artist-btn,
+.profile-info > form {
+    display: inline-flex;
+}

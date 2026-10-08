@@ -1,4 +1,5 @@
-
+from werkzeug.utils import secure_filename
+import os
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from models import db, Sticker, Artist, Category
@@ -7,12 +8,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Sticker, Artist, Category
 import os
 
+
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-fallback-key")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URL",
-    "mysql+pymysql://acce69_apple12:adhikari%40567@MYSQL9001.site4now.net:3306/db_acce69_apple12"
+
+ADMIN_EMAIL = "adhikari2186@gmail.com"
+
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    "mysql+pymysql://root:@localhost:3307/sticker_site"
 )
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -20,6 +25,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 with app.app_context():
+   
     db.create_all()
 
 @app.context_processor
@@ -52,6 +58,49 @@ def search():
 def artists():
     artist_list = Artist.query.all()
     return render_template("artists.html", artists=artist_list)
+
+@app.route("/apply-artist", methods=["POST"])
+def apply_artist():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if user.role == "artist":
+        flash("You are already an artist.")
+        return redirect(url_for("profile"))
+
+    if user.artist_status == "pending":
+        flash("Your artist application is already pending.")
+        return redirect(url_for("profile"))
+
+    user.artist_status = "pending"
+    db.session.commit()
+
+    flash("Artist application submitted. Please wait for admin approval.")
+    return redirect(url_for("profile"))
+
+
+@app.route("/admin/artist-requests")
+def artist_requests():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    admin = User.query.get(session["user_id"])
+
+    if admin.role != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    pending_users = User.query.filter_by(
+        artist_status="pending"
+    ).all()
+
+    return render_template(
+        "admin/artist_requests.html",
+        users=pending_users
+    )
+
 
 @app.route("/about")
 def about():
@@ -119,6 +168,126 @@ def register():
         return redirect(url_for("login"))
 
     return render_template("register.html")
+@app.route("/profile")
+def profile():
+
+    if "user_id" not in session:
+        flash("Please login to view your profile.")
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    return render_template(
+        "profile/profile.html",
+        user=user,
+        saved_count=0,
+        wishlist_count=0,
+        purchased_count=0,
+        created_count=0
+    )
+
+@app.route("/edit-profile", methods=["GET", "POST"])
+def edit_profile():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if request.method == "POST":
+
+        user.name = request.form["name"]
+        user.bio = request.form["bio"]
+        user.location = request.form["location"]
+
+        # Profile picture
+        file = request.files.get("profile_image")
+
+        if file and file.filename:
+
+            filename = secure_filename(file.filename)
+
+            upload_folder = os.path.join(
+                app.static_folder,
+                "uploads"
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+
+            file.save(
+                os.path.join(upload_folder, filename)
+            )
+
+            user.profile_image = filename
+
+        db.session.commit()
+
+        flash("Profile updated successfully!")
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "profile/edit_profile.html",
+        user=user
+    )
+@app.route("/admin/approve-artist/<int:user_id>", methods=["POST"])
+def approve_artist(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    admin = User.query.get(session["user_id"])
+
+    if admin.role != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    user = User.query.get_or_404(user_id)
+
+    if user.artist_status != "pending":
+        flash("No pending artist request.")
+        return redirect(url_for("artist_requests"))
+
+    artist = Artist(
+        user_id=user.id,
+        name=user.name,
+        handle="@" + user.name.lower().replace(" ", "_"),
+        bio=user.bio,
+        avatar=user.profile_image
+    )
+
+    user.role = "artist"
+    user.artist_status = "approved"
+
+    db.session.add(artist)
+    db.session.commit()
+
+    flash(f"{user.name} is now an artist.")
+    return redirect(url_for("artist_requests"))
+
+@app.route("/admin/reject-artist/<int:user_id>", methods=["POST"])
+def reject_artist(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    admin = User.query.get(session["user_id"])
+
+    if admin.role != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    user = User.query.get_or_404(user_id)
+
+    if user.artist_status != "pending":
+        flash("No pending artist request.")
+        return redirect(url_for("artist_requests"))
+
+    user.artist_status = "rejected"
+
+    db.session.commit()
+
+    flash(f"{user.name}'s artist request was rejected.")
+    return redirect(url_for("artist_requests"))
+
+
 
 @app.route("/logout")
 def logout():

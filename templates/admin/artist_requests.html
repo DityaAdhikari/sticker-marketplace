@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="admin-page">
+
+    <h1>Artist Requests</h1>
+    <p>Review users who want to become artists.</p>
+
+    {% if users %}
+
+        {% for user in users %}
+
+        <div class="artist-request-card">
+
+            <div>
+                <h3>{{ user.name }}</h3>
+
+                <p>{{ user.email }}</p>
+
+                {% if user.bio %}
+                    <p>{{ user.bio }}</p>
+                {% endif %}
+
+                {% if user.location %}
+                    <p>{{ user.location }}</p>
+                {% endif %}
+            </div>
+
+            <div class="artist-request-actions">
+
+                <form method="POST"
+                      action="{{ url_for('approve_artist', user_id=user.id) }}">
+
+                    <button type="submit">
+                        Approve
+                    </button>
+
+                </form>
+
+                <form method="POST"
+                      action="{{ url_for('reject_artist', user_id=user.id) }}">
+
+                    <button type="submit">
+                        Reject
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>No pending artist requests.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

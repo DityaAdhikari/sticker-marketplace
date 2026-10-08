@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - StickerNest{% endblock %}
+
+{% block content %}
+
+<div class="profile-page">
+
+    <!-- PROFILE HEADER -->
+    <section class="profile-header">
+
+        <!-- Profile Picture -->
+        <div class="profile-picture-wrapper">
+
+            {% if user.profile_image %}
+
+                <img
+                    src="{{ url_for('static', filename='uploads/' + user.profile_image) }}"
+                    alt="Profile picture"
+                    class="profile-picture"
+                >
+
+            {% else %}
+
+                <div class="profile-picture default-avatar">
+                    {{ user.name[0]|upper }}
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- Profile Information -->
+        <div class="profile-info">
+
+           <h1>{{ user.name }}</h1>
+
+            <p class="username">
+                @{{ user.name }}
+            </p>
+
+            {% if user.bio %}
+
+                <p class="bio">
+                    {{ user.bio }}
+                </p>
+
+            {% else %}
+
+                <p class="bio">
+                    No bio yet.
+                </p>
+
+            {% endif %}
+
+
+            {% if user.location %}
+
+                <p class="location">
+                    📍 {{ user.location }}
+                </p>
+
+            {% endif %}
+
+
+            <!-- PROFILE ACTIONS -->
+            <div class="profile-actions">
+
+                <!-- Edit Profile -->
+                <a
+                    href="{{ url_for('edit_profile') }}"
+                    class="edit-profile-btn"
+                >
+                    Edit Profile
+                </a>
+
+
+                <!-- Admin Artist Requests -->
+                {% if user.role == "admin" %}
+
+                    <a
+                        href="{{ url_for('artist_requests') }}"
+                        class="artist-btn"
+                    >
+                        Artist Requests
+                    </a>
+
+                {% endif %}
+
+
+                <!-- Customer Artist Application -->
+                {% if user.role == "customer" and user.artist_status == "none" %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('apply_artist') }}"
+                    >
+
+                        <button
+                            type="submit"
+                            class="artist-btn"
+                        >
+                            Apply to Become an Artist
+                        </button>
+
+                    </form>
+
+
+                <!-- Pending Application -->
+                {% elif user.artist_status == "pending" %}
+
+                    <button
+                        type="button"
+                        class="artist-btn"
+                        disabled
+                    >
+                        Artist Application Pending
+                    </button>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATISTICS -->
+    <section class="profile-stats">
+
+        <div class="stat-card">
+
+            <span class="stat-number">
+                {{ saved_count }}
+            </span>
+
+            <span class="stat-label">
+                Saved
+            </span>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span class="stat-number">
+                {{ wishlist_count }}
+            </span>
+
+            <span class="stat-label">
+                Wishlist
+            </span>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span class="stat-number">
+                {{ purchased_count }}
+            </span>
+
+            <span class="stat-label">
+                Purchased
+            </span>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span class="stat-number">
+                {{ created_count }}
+            </span>
+
+            <span class="stat-label">
+                Created
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- PROFILE TABS -->
+    <nav class="profile-tabs">
+
+        <a
+            href="{{ url_for('profile') }}"
+            class="profile-tab active"
+        >
+            Saved
+        </a>
+
+        <a
+            href="#wishlist"
+            class="profile-tab"
+        >
+            Wishlist
+        </a>
+
+        <a
+            href="#purchased"
+            class="profile-tab"
+        >
+            Purchased
+        </a>
+
+        <a
+            href="#created"
+            class="profile-tab"
+        >
+            Created
+        </a>
+
+    </nav>
+
+
+    <!-- SAVED STICKERS -->
+    <section class="profile-section">
+
+        <div class="section-heading">
+
+            <h2>Saved Stickers</h2>
+
+            <p>
+                Stickers you've saved for later.
+            </p>
+
+        </div>
+
+
+        <div class="empty-profile">
+
+            <div class="empty-icon">
+                ✦
+            </div>
+
+            <h3>
+                No saved stickers yet
+            </h3>
+
+            <p>
+                Explore StickerNest and save stickers you love.
+            </p>
+
+            <a href="{{ url_for('shop') }}">
+                Explore Stickers
+            </a>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

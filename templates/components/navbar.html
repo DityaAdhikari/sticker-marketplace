@@ -37,9 +37,25 @@
         </div>
       </div>
 
-      <a href="{{ url_for('artists') }}" class="nav-item {{ 'active' if request.endpoint == 'artists' }}">Artists</a>
-      <a href="{{ url_for('about') }}" class="nav-item {{ 'active' if request.endpoint == 'about' }}">About</a>
-      <a href="{{ url_for('contact') }}" class="nav-item {{ 'active' if request.endpoint == 'contact' }}">Contact</a>
+      <a href="{{ url_for('artists') }}"
+   class="nav-item {{ 'active' if request.endpoint == 'artists' }}">
+    Artists
+</a>
+
+<a href="{{ url_for('about') }}"
+   class="nav-item {{ 'active' if request.endpoint == 'about' }}">
+    About
+</a>
+
+<a href="{{ url_for('contact') }}"
+   class="nav-item {{ 'active' if request.endpoint == 'contact' }}">
+    Contact
+</a>
+
+<a href="{{ url_for('profile') }}"
+   class="nav-item {{ 'active' if request.endpoint == 'profile' }}">
+    Profile
+</a>
     </nav>
 
     <div class="nav-divider"></div>
