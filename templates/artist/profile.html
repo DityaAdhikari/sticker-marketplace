@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}{{ artist.name }} - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/artists.css') }}">
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="artist-profile">
+
+    <div class="artist-profile-header">
+
+        {% if artist.avatar %}
+            <img
+                src="{{ url_for('static', filename='uploads/' + artist.avatar) }}"
+                alt="{{ artist.name }}"
+                class="artist-profile-avatar"
+            >
+        {% else %}
+            <div class="artist-profile-avatar default-avatar">
+                {{ artist.name[0]|upper }}
+            </div>
+        {% endif %}
+
+        <h1>{{ artist.name }}</h1>
+
+        <p class="artist-handle">
+            {{ artist.handle }}
+        </p>
+
+        {% if artist.bio %}
+            <p class="artist-bio">
+                {{ artist.bio }}
+            </p>
+        {% endif %}
+
+        <p>
+            {{ stickers|length }} stickers
+        </p>
+
+    </div>
+
+
+    <section class="artist-stickers">
+
+        <h2>Stickers by {{ artist.name }}</h2>
+
+        {% if stickers %}
+
+            <div class="stickers-grid">
+
+                {% for sticker in stickers %}
+
+                    <div class="sticker-card">
+
+                        <div class="card-image-wrapper">
+
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                                alt="{{ sticker.name }}"
+                                class="product-img"
+                            >
+
+                        </div>
+
+                        <div class="card-meta">
+
+                            <h3 class="product-name">
+                                {{ sticker.name }}
+                            </h3>
+
+                            {% if sticker.description %}
+                                <p>{{ sticker.description }}</p>
+                            {% endif %}
+
+                            <span class="currency-price">
+                                Rs. {{ sticker.price|int }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <p>This artist hasn't published any stickers yet.</p>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

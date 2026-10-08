@@ -6,10 +6,8 @@
 
 <div class="profile-page">
 
-    <!-- PROFILE HEADER -->
     <section class="profile-header">
 
-        <!-- Profile Picture -->
         <div class="profile-picture-wrapper">
 
             {% if user.profile_image %}
@@ -31,14 +29,11 @@
         </div>
 
 
-        <!-- Profile Information -->
         <div class="profile-info">
 
-           <h1>{{ user.name }}</h1>
+            <h1>{{ user.name }}</h1>
 
-            <p class="username">
-                @{{ user.name }}
-            </p>
+            <p class="username">@{{ user.name }}</p>
 
             {% if user.bio %}
 
@@ -64,10 +59,8 @@
             {% endif %}
 
 
-            <!-- PROFILE ACTIONS -->
             <div class="profile-actions">
 
-                <!-- Edit Profile -->
                 <a
                     href="{{ url_for('edit_profile') }}"
                     class="edit-profile-btn"
@@ -76,7 +69,6 @@
                 </a>
 
 
-                <!-- Admin Artist Requests -->
                 {% if user.role == "admin" %}
 
                     <a
@@ -89,7 +81,18 @@
                 {% endif %}
 
 
-                <!-- Customer Artist Application -->
+                {% if user.role == "artist" %}
+
+                    <a
+                        href="{{ url_for('artist_dashboard') }}"
+                        class="artist-btn"
+                    >
+                        Artist Dashboard
+                    </a>
+
+                {% endif %}
+
+
                 {% if user.role == "customer" and user.artist_status == "none" %}
 
                     <form
@@ -106,8 +109,6 @@
 
                     </form>
 
-
-                <!-- Pending Application -->
                 {% elif user.artist_status == "pending" %}
 
                     <button
@@ -127,64 +128,31 @@
     </section>
 
 
-    <!-- STATISTICS -->
     <section class="profile-stats">
 
         <div class="stat-card">
-
-            <span class="stat-number">
-                {{ saved_count }}
-            </span>
-
-            <span class="stat-label">
-                Saved
-            </span>
-
+            <span class="stat-number">{{ saved_count }}</span>
+            <span class="stat-label">Saved</span>
         </div>
 
-
         <div class="stat-card">
-
-            <span class="stat-number">
-                {{ wishlist_count }}
-            </span>
-
-            <span class="stat-label">
-                Wishlist
-            </span>
-
+            <span class="stat-number">{{ wishlist_count }}</span>
+            <span class="stat-label">Wishlist</span>
         </div>
 
-
         <div class="stat-card">
-
-            <span class="stat-number">
-                {{ purchased_count }}
-            </span>
-
-            <span class="stat-label">
-                Purchased
-            </span>
-
+            <span class="stat-number">{{ purchased_count }}</span>
+            <span class="stat-label">Purchased</span>
         </div>
 
-
         <div class="stat-card">
-
-            <span class="stat-number">
-                {{ created_count }}
-            </span>
-
-            <span class="stat-label">
-                Created
-            </span>
-
+            <span class="stat-number">{{ created_count }}</span>
+            <span class="stat-label">Created</span>
         </div>
 
     </section>
 
 
-    <!-- PROFILE TABS -->
     <nav class="profile-tabs">
 
         <a
@@ -194,31 +162,21 @@
             Saved
         </a>
 
-        <a
-            href="#wishlist"
-            class="profile-tab"
-        >
+        <a href="#wishlist" class="profile-tab">
             Wishlist
         </a>
 
-        <a
-            href="#purchased"
-            class="profile-tab"
-        >
+        <a href="#purchased" class="profile-tab">
             Purchased
         </a>
 
-        <a
-            href="#created"
-            class="profile-tab"
-        >
+        <a href="#created" class="profile-tab">
             Created
         </a>
 
     </nav>
 
 
-    <!-- SAVED STICKERS -->
     <section class="profile-section">
 
         <div class="section-heading">
@@ -234,13 +192,9 @@
 
         <div class="empty-profile">
 
-            <div class="empty-icon">
-                ✦
-            </div>
+            <div class="empty-icon">✦</div>
 
-            <h3>
-                No saved stickers yet
-            </h3>
+            <h3>No saved stickers yet</h3>
 
             <p>
                 Explore StickerNest and save stickers you love.

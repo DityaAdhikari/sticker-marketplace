@@ -57,7 +57,26 @@ def search():
 @app.route("/artists")
 def artists():
     artist_list = Artist.query.all()
-    return render_template("artists.html", artists=artist_list)
+
+    return render_template(
+        "artists.html",
+        artists=artist_list
+    )
+
+
+@app.route("/artists/<int:artist_id>")
+def artist_profile(artist_id):
+    artist = Artist.query.get_or_404(artist_id)
+
+    stickers = Sticker.query.filter_by(
+        artist_id=artist.id
+    ).all()
+
+    return render_template(
+        "artist/profile.html",
+        artist=artist,
+        stickers=stickers
+    )
 
 @app.route("/apply-artist", methods=["POST"])
 def apply_artist():
@@ -287,6 +306,201 @@ def reject_artist(user_id):
     flash(f"{user.name}'s artist request was rejected.")
     return redirect(url_for("artist_requests"))
 
+@app.route("/artist-dashboard")
+def artist_dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if user.role != "artist":
+        flash("Access denied.")
+        return redirect(url_for("profile"))
+
+    artist = Artist.query.filter_by(user_id=user.id).first()
+
+    if not artist:
+        flash("Artist profile not found.")
+        return redirect(url_for("profile"))
+
+    stickers = Sticker.query.filter_by(artist_id=artist.id).all()
+
+    return render_template(
+        "artist/dashboard.html",
+        user=user,
+        artist=artist,
+        stickers=stickers
+    )
+
+
+
+@app.route("/create-sticker", methods=["GET", "POST"])
+def create_sticker():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if user.role != "artist":
+        flash("Access denied.")
+        return redirect(url_for("profile"))
+
+    artist = Artist.query.filter_by(user_id=user.id).first()
+
+    if not artist:
+        flash("Artist profile not found.")
+        return redirect(url_for("profile"))
+
+    categories = Category.query.all()
+
+    if request.method == "POST":
+
+        name = request.form.get("name")
+        description = request.form.get("description")
+        price = request.form.get("price")
+        category_id = request.form.get("category_id")
+        image = request.files.get("image")
+
+        if not name or not price or not category_id or not image:
+            flash("Please fill in all required fields.")
+            return render_template(
+                "artist/create_sticker.html",
+                user=user,
+                categories=categories
+            )
+
+        filename = secure_filename(image.filename)
+
+        if not filename:
+            flash("Invalid image file.")
+            return render_template(
+                "artist/create_sticker.html",
+                user=user,
+                categories=categories
+            )
+
+        upload_folder = os.path.join(
+            app.static_folder,
+            "uploads"
+        )
+
+        os.makedirs(upload_folder, exist_ok=True)
+
+        image.save(
+            os.path.join(upload_folder, filename)
+        )
+
+        sticker = Sticker(
+            name=name,
+            description=description,
+            price=float(price),
+            image=filename,
+            artist_id=artist.id,
+            category_id=int(category_id)
+        )
+
+        db.session.add(sticker)
+        db.session.commit()
+
+        flash("Sticker published successfully!")
+        return redirect(url_for("artist_dashboard"))
+
+    return render_template(
+        "artist/create_sticker.html",
+        user=user,
+        categories=categories
+    )
+
+@app.route("/edit-sticker/<int:sticker_id>", methods=["GET", "POST"])
+def edit_sticker(sticker_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if user.role != "artist":
+        flash("Access denied.")
+        return redirect(url_for("profile"))
+
+    artist = Artist.query.filter_by(user_id=user.id).first()
+
+    if not artist:
+        flash("Artist profile not found.")
+        return redirect(url_for("profile"))
+
+    sticker = Sticker.query.get_or_404(sticker_id)
+
+    # Make sure this artist owns the sticker
+    if sticker.artist_id != artist.id:
+        flash("You can only edit your own stickers.")
+        return redirect(url_for("artist_dashboard"))
+
+    categories = Category.query.all()
+
+    if request.method == "POST":
+        sticker.name = request.form.get("name")
+        sticker.description = request.form.get("description")
+        sticker.price = float(request.form.get("price"))
+        sticker.category_id = int(request.form.get("category_id"))
+
+        image = request.files.get("image")
+
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+
+            upload_folder = os.path.join(
+                app.static_folder,
+                "uploads"
+            )
+
+            os.makedirs(upload_folder, exist_ok=True)
+
+            image.save(
+                os.path.join(upload_folder, filename)
+            )
+
+            sticker.image = filename
+
+        db.session.commit()
+
+        flash("Sticker updated successfully!")
+        return redirect(url_for("artist_dashboard"))
+
+    return render_template(
+        "artist/edit_sticker.html",
+        user=user,
+        sticker=sticker,
+        categories=categories
+    )
+
+@app.route("/delete-sticker/<int:sticker_id>", methods=["POST"])
+def delete_sticker(sticker_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if user.role != "artist":
+        flash("Access denied.")
+        return redirect(url_for("profile"))
+
+    artist = Artist.query.filter_by(user_id=user.id).first()
+
+    if not artist:
+        flash("Artist profile not found.")
+        return redirect(url_for("profile"))
+
+    sticker = Sticker.query.get_or_404(sticker_id)
+
+    if sticker.artist_id != artist.id:
+        flash("You can only delete your own stickers.")
+        return redirect(url_for("artist_dashboard"))
+
+    db.session.delete(sticker)
+    db.session.commit()
+
+    flash("Sticker deleted successfully!")
+    return redirect(url_for("artist_dashboard"))
 
 
 @app.route("/logout")

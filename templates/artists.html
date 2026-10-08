@@ -17,15 +17,22 @@
     <div class="artists-grid">
       {% for artist in artists %}
       <div class="artist-card">
-  <div class="artist-avatar-placeholder"></div>
+      <div class="artist-avatar-initials">
+       {{ artist.name[0]|upper }}
+      </div>
   <div class="artist-meta">
     <h3 class="artist-name">{{ artist.handle }}</h3>
     <p class="artist-bio">{{ artist.bio }}</p>
     <div class="artist-stats">
       <span class="stat-item"><strong>{{ artist.stickers | length }}</strong> stickers</span>
     </div>
-    <a href="#" class="view-profile-btn">View Profile</a>
-  </div>
+      <a
+     href="{{ url_for('artist_profile', artist_id=artist.id) }}"
+     class="view-profile-btn"
+     >
+       View Profile
+     </a>
+    </div>
 </div>
        {% endfor %}
     </div>

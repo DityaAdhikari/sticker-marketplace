@@ -21,12 +21,17 @@
             <i class="fa-regular fa-heart"></i>
           </button>
           <div class="feature_product">
-            <img src="{{ url_for('static', filename='images/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
+            <img src="{{ url_for('static', filename='uploads/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
           </div>
         </div>
         <div class="card-meta">
           <h3 class="product-name">{{ sticker.name }}</h3>
-          <p class="artist-attribution">by <span class="artist-name">{{ sticker.artist.handle }}</span></p>
+            <p class="artist-attribution">
+    
+              <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}" class="artist-name">
+                {{ sticker.artist.handle }}
+              </a>
+            </p>
           <div class="rating-block">
             <i class="fa-solid fa-star"></i>
             <span class="rating-value">{{ sticker.rating }}</span>

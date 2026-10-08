@@ -74,28 +74,13 @@ class Category(db.Model):
         lazy=True
     )
 
-
 class Sticker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
     name = db.Column(db.String(100), nullable=False)
-
+    description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
-
     image = db.Column(db.String(200), nullable=False)
-
     rating = db.Column(db.Float, default=0.0)
-
     review_count = db.Column(db.Integer, default=0)
-
-    artist_id = db.Column(
-        db.Integer,
-        db.ForeignKey("artist.id"),
-        nullable=False
-    )
-
-    category_id = db.Column(
-        db.Integer,
-        db.ForeignKey("category.id"),
-        nullable=False
-    )
+    artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
