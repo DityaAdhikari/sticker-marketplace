@@ -17,15 +17,35 @@
       {% for sticker in stickers %}
       <div class="sticker-card" data-id="{{ sticker.id }}">
         <div class="card-image-wrapper">
-          <button class="wishlist-toggle-btn" aria-label="Add to wishlist">
-            <i class="fa-regular fa-heart"></i>
-          </button>
+         
+
+
+<form method="POST"
+      action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}"
+      class="wishlist-form">
+    <button type="submit"
+            class="wishlist-toggle-btn"
+            aria-label="Toggle wishlist">
+        <i class="fa-regular fa-heart"></i>
+    </button>
+</form>
+
           <div class="feature_product">
-            <img src="{{ url_for('static', filename='uploads/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
+           <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+           <img
+            src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+            alt="{{ sticker.name }}"
+            class="product-img"
+            >
+           </a>
           </div>
         </div>
         <div class="card-meta">
-          <h3 class="product-name">{{ sticker.name }}</h3>
+          <h3 class="product-name">
+           <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+            {{ sticker.name }}
+            </a>
+          </h3>
             <p class="artist-attribution">
     
               <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}" class="artist-name">

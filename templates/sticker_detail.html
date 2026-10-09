@@ -1,0 +1,57 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ sticker.name }} - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="page-wrapper">
+    <section class="sticker-detail">
+
+        <div class="sticker-detail-image">
+            <img
+                src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                alt="{{ sticker.name }}"
+            >
+        </div>
+
+        <div class="sticker-detail-info">
+            <p class="artist-attribution">
+                By
+                <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}">
+                    {{ sticker.artist.handle }}
+                </a>
+            </p>
+
+            <h1>{{ sticker.name }}</h1>
+
+            <p class="sticker-detail-price">
+                Rs. {{ sticker.price | int }}
+            </p>
+
+            {% if sticker.description %}
+                <p class="sticker-detail-description">
+                    {{ sticker.description }}
+                </p>
+            {% else %}
+                <p class="sticker-detail-description">
+                    No description available yet.
+                </p>
+            {% endif %}
+
+            <p class="sticker-detail-rating">
+                ★ {{ sticker.rating }} ({{ sticker.review_count }} reviews)
+            </p>
+
+            <button type="button" class="primary-add-btn" disabled>
+                Add to Cart — Coming Soon
+            </button>
+        </div>
+
+    </section>
+</main>
+{% endblock %}
+

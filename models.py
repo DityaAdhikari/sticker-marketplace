@@ -84,3 +84,61 @@ class Sticker(db.Model):
     review_count = db.Column(db.Integer, default=0)
     artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
+
+    
+class Wishlist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+    sticker_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sticker.id"),
+        nullable=False
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id",
+            "sticker_id",
+            name="unique_user_wishlist_sticker"
+        ),
+    )
+
+    user = db.relationship("User", backref="wishlist_items")
+    sticker = db.relationship("Sticker")
+
+
+class Purchase(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+    sticker_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sticker.id"),
+        nullable=False
+    )
+
+    purchase_date = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        nullable=False
+    )
+
+    status = db.Column(
+        db.String(20),
+        default="completed",
+        nullable=False
+    )
+
+    user = db.relationship("User", backref="purchases")
+    sticker = db.relationship("Sticker")

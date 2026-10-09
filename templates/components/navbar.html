@@ -62,21 +62,7 @@
 
     <!-- Action Buttons -->
     <div class="nav-actions">
-      <div class="action-item" id="wishlist-btn">
-        <div class="icon-wrapper">
-          <i class="fa-regular fa-heart"></i>
-          <span class="badge">0</span>
-        </div>
-        <span class="action-label">Wishlist</span>
-      </div>
-
-      <div class="action-item" id="cart-btn">
-        <div class="icon-wrapper cart-icon-bg">
-          <i class="fa-solid fa-cart-shopping"></i>
-          <span class="badge">0</span>
-        </div>
-        <span class="action-label">Cart</span>
-      </div>
+  
         {% if session.get("user_id") %}
 
     <span class="action-label">Hi, {{ session.get("user_name") }}</span>

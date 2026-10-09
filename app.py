@@ -1,11 +1,14 @@
+from typing import Union
+
+from werkzeug import Response
 from werkzeug.utils import secure_filename
 import os
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from models import db, Sticker, Artist, Category
+from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Sticker, Artist, Category
+from models import db, User, Sticker, Artist, Category, Wishlist , Purchase
 import os
 
 
@@ -28,6 +31,7 @@ with app.app_context():
    
     db.create_all()
 
+
 @app.context_processor
 def inject_categories():
     return dict(nav_categories=Category.query.all())
@@ -47,6 +51,14 @@ def shop():
     else:
         stickers = Sticker.query.all()
     return render_template("shop.html", stickers=stickers)
+@app.route("/sticker/<int:sticker_id>")
+def sticker_detail(sticker_id):
+    sticker = Sticker.query.get_or_404(sticker_id)
+
+    return render_template(
+        "sticker_detail.html",
+        sticker=sticker
+    )
 
 @app.route("/search")
 def search():
@@ -187,6 +199,8 @@ def register():
         return redirect(url_for("login"))
 
     return render_template("register.html")
+
+
 @app.route("/profile")
 def profile():
 
@@ -194,16 +208,35 @@ def profile():
         flash("Please login to view your profile.")
         return redirect(url_for("login"))
 
-    user = User.query.get(session["user_id"])
+    user = User.query.get_or_404(session["user_id"])
+
+    wishlist_items = Wishlist.query.filter_by(
+        user_id=user.id
+    ).all()
+
+    artist = Artist.query.filter_by(user_id=user.id).first()
+
+    created_stickers = []
+    if artist:
+        created_stickers = Sticker.query.filter_by(
+            artist_id=artist.id
+        ).all()
+
+    purchases = Purchase.query.filter_by(
+       user_id=user.id,
+       status="completed"
+       ).all()
 
     return render_template(
-        "profile/profile.html",
-        user=user,
-        saved_count=0,
-        wishlist_count=0,
-        purchased_count=0,
-        created_count=0
-    )
+    "profile/profile.html",
+    user=user,
+    wishlist_items=wishlist_items,
+    created_stickers=created_stickers,
+    purchases=purchases,
+    wishlist_count=len(wishlist_items),
+    purchased_count=len(purchases),
+    created_count=len(created_stickers)
+)
 
 @app.route("/edit-profile", methods=["GET", "POST"])
 def edit_profile():
@@ -312,17 +345,12 @@ def artist_dashboard():
         return redirect(url_for("login"))
 
     user = User.query.get(session["user_id"])
-
-    if user.role != "artist":
-        flash("Access denied.")
-        return redirect(url_for("profile"))
-
     artist = Artist.query.filter_by(user_id=user.id).first()
 
-    if not artist:
-        flash("Artist profile not found.")
+    if not artist or user.role != "artist":
+        flash("Access denied.")
         return redirect(url_for("profile"))
-
+    
     stickers = Sticker.query.filter_by(artist_id=artist.id).all()
 
     return render_template(
@@ -411,8 +439,10 @@ def create_sticker():
         categories=categories
     )
 
+@app.route("/artist/sticker/edit/<int:sticker_id>", methods=["GET", "POST"])
 @app.route("/edit-sticker/<int:sticker_id>", methods=["GET", "POST"])
 def edit_sticker(sticker_id):
+
     if "user_id" not in session:
         return redirect(url_for("login"))
 
@@ -469,6 +499,7 @@ def edit_sticker(sticker_id):
     return render_template(
         "artist/edit_sticker.html",
         user=user,
+        artist=artist,
         sticker=sticker,
         categories=categories
     )
@@ -502,6 +533,31 @@ def delete_sticker(sticker_id):
     flash("Sticker deleted successfully!")
     return redirect(url_for("artist_dashboard"))
 
+@app.route("/wishlist/toggle/<int:sticker_id>", methods=["POST"])
+def toggle_wishlist(sticker_id):
+    if "user_id" not in session:
+        flash("Please log in to save stickers to your wishlist.")
+        return redirect(url_for("login"))
+
+    user = User.query.get_or_404(session["user_id"])
+    sticker = Sticker.query.get_or_404(sticker_id)
+
+    existing_item = Wishlist.query.filter_by(
+        user_id=user.id,
+        sticker_id=sticker.id
+    ).first()
+
+    if existing_item:
+        db.session.delete(existing_item)
+        flash("Sticker removed from your wishlist.")
+    else:
+        db.session.add(
+            Wishlist(user_id=user.id, sticker_id=sticker.id)
+        )
+        flash("Sticker added to your wishlist.")
+
+    db.session.commit()
+    return redirect(request.referrer or url_for("shop"))
 
 @app.route("/logout")
 def logout():

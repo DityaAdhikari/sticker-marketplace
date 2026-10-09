@@ -130,10 +130,6 @@
 
     <section class="profile-stats">
 
-        <div class="stat-card">
-            <span class="stat-number">{{ saved_count }}</span>
-            <span class="stat-label">Saved</span>
-        </div>
 
         <div class="stat-card">
             <span class="stat-number">{{ wishlist_count }}</span>
@@ -155,13 +151,6 @@
 
     <nav class="profile-tabs">
 
-        <a
-            href="{{ url_for('profile') }}"
-            class="profile-tab active"
-        >
-            Saved
-        </a>
-
         <a href="#wishlist" class="profile-tab">
             Wishlist
         </a>
@@ -179,31 +168,137 @@
 
     <section class="profile-section">
 
-        <div class="section-heading">
+        
 
-            <h2>Saved Stickers</h2>
 
-            <p>
-                Stickers you've saved for later.
-            </p>
+        
+{% if wishlist_items %}
+    <div class="stickers-grid">
+        {% for item in wishlist_items %}
+            <div class="sticker-card">
+                <a href="{{ url_for('sticker_detail', sticker_id=item.sticker.id) }}">
+                    <div class="card-image-wrapper">
+                        <img
+                            src="{{ url_for('static', filename='uploads/' + item.sticker.image) }}"
+                            alt="{{ item.sticker.name }}"
+                            class="product-img"
+                        >
+                    </div>
+                </a>
 
+                <div class="card-meta">
+                    <h3 class="product-name">
+                        {{ item.sticker.name }}
+                    </h3>
+
+                    <span class="currency-price">
+                        Rs. {{ item.sticker.price|int }}
+                    </span>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('toggle_wishlist', sticker_id=item.sticker.id) }}"
+                    >
+                        <button type="submit" class="wishlist-toggle-btn">
+                            <i class="fa-solid fa-heart"></i>
+                            Remove from wishlist
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+
+<section class="profile-section" id="created">
+    <div class="section-heading">
+        <h2>Created Stickers</h2>
+        <p>Stickers you've published on StickerNest.</p>
+    </div>
+
+    {% if created_stickers %}
+        <div class="stickers-grid">
+            {% for sticker in created_stickers %}
+                <div class="sticker-card">
+                    <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+                        <div class="card-image-wrapper">
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                                alt="{{ sticker.name }}"
+                                class="product-img"
+                            >
+                        </div>
+                    </a>
+
+                    <div class="card-meta">
+                        <h3 class="product-name">{{ sticker.name }}</h3>
+                        <span class="currency-price">
+                            Rs. {{ sticker.price|int }}
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-
-
+    {% else %}
         <div class="empty-profile">
-
             <div class="empty-icon">✦</div>
+            <h3>No created stickers yet</h3>
+            <p>Stickers you publish as an artist will appear here.</p>
+        </div>
+    {% endif %}
+</section>
 
-            <h3>No saved stickers yet</h3>
 
-            <p>
-                Explore StickerNest and save stickers you love.
-            </p>
+<section class="profile-section" id="purchased">
+    <div class="section-heading">
+        <h2>Purchased Stickers</h2>
+        <p>Stickers you've purchased on StickerNest.</p>
+    </div>
 
-            <a href="{{ url_for('shop') }}">
+    {% if purchases %}
+        <div class="stickers-grid">
+            {% for purchase in purchases %}
+                <div class="sticker-card">
+                    <a href="{{ url_for('sticker_detail', sticker_id=purchase.sticker.id) }}">
+                        <div class="card-image-wrapper">
+                            <img
+                                src="{{ url_for('static', filename='uploads/' + purchase.sticker.image) }}"
+                                alt="{{ purchase.sticker.name }}"
+                                class="product-img"
+                            >
+                        </div>
+                    </a>
+
+                    <div class="card-meta">
+                        <h3 class="product-name">
+                            {{ purchase.sticker.name }}
+                        </h3>
+                        <span class="currency-price">
+                            Rs. {{ purchase.sticker.price|int }}
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-profile">
+            <div class="empty-icon">🛍️</div>
+            <h3>No purchases yet</h3>
+            <p>Stickers you purchase will appear here.</p>
+            <a href="{{ url_for('shop') }}" class="btn-primary">
                 Explore Stickers
             </a>
+        </div>
+    {% endif %}
+</section>
 
+    <div class="empty-profile">
+        <div class="empty-icon">✦</div>
+        <h3>No saved stickers yet</h3>
+        <p>Explore StickerNest and save stickers you love.</p>
+        <a href="{{ url_for('shop') }}">Explore Stickers</a>
+    </div>
+{% endif %}
         </div>
 
     </section>

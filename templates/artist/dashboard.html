@@ -11,89 +11,34 @@
 <div class="artist-dashboard">
 
     <h1>Artist Dashboard</h1>
+    <p>Welcome, {{ artist.name or user.username }}!</p>
 
-    <p>Welcome, {{ user.name }}!</p>
-
-    <div class="artist-dashboard-header">
-        <h2>My Stickers</h2>
+    <div class="stickers-list">
+        <h2>Your Stickers</h2>
 
         <a href="{{ url_for('create_sticker') }}" class="artist-btn">
             Create Sticker
-        </a>
-    </div>
+        </a>   
 
-    {% if stickers %}
-
-        <div class="artist-sticker-grid">
-
-            {% for sticker in stickers %}
-
-                <div class="artist-sticker-card">
-
-                    <img
-                        src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
-                        alt="{{ sticker.name }}"
-                    >
-
-                    <div class="artist-sticker-info">
+        {% if stickers %}
+            <div class="sticker-grid">
+                {% for sticker in stickers %}
+                    <div class="sticker-card">
+                        <img src="{{ url_for('static', filename='uploads/' + sticker.image) }}" alt="{{ sticker.name }}">
 
                         <h3>{{ sticker.name }}</h3>
 
-                        {% if sticker.description %}
-                            <p>{{ sticker.description }}</p>
-                        {% endif %}
-
                         <p>Rs. {{ sticker.price }}</p>
-
-                        <p>Category: {{ sticker.category.name }}</p>
-
-                        <div class="sticker-actions">
-
-                           <a
-                          href="{{ url_for('edit_sticker', sticker_id=sticker.id) }}"
-                          class="artist-btn"
-                           >
-                            Edit
-                            </a>
-
-                        <form
-                           method="POST"
-                           action="{{ url_for('delete_sticker', sticker_id=sticker.id) }}"
-                           onsubmit="return confirm('Are you sure you want to delete this sticker?');"
-                        >
-                           <button type="submit" class="delete-btn">
-                                Delete
-                           </button>
-                        </form>
-
-                        </div>
-
+                        <a href="{{ url_for('edit_sticker', sticker_id=sticker.id) }}" class="artist-btn">
+                            Edit Sticker
+                        </a>
                     </div>
-
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-    {% else %}
-
-        <div class="empty-profile">
-
-            <div class="empty-icon">✦</div>
-
-            <h3>No stickers yet</h3>
-
-            <p>Create your first sticker and start building your collection.</p>
-
-            <a href="{{ url_for('create_sticker') }}" class="artist-btn">
-                Create Your First Sticker
-            </a>
-
-        </div>
-
-    {% endif %}
-
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>You haven't added any stickers yet.</p>
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

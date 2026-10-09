@@ -373,3 +373,111 @@ a {
 .profile-info > form {
     display: inline-flex;
 }
+
+/* Shop sticker grid */
+.stickers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+/* Sticker card */
+.sticker-card {
+    min-width: 0;
+    overflow: hidden;
+    background: #141414;
+    border: 1px solid #292929;
+    border-radius: 18px;
+    transition: border-color 0.2s ease,
+                transform 0.2s ease;
+}
+
+.sticker-card:hover {
+    transform: translateY(-4px);
+    border-color: #444;
+}
+
+/* Image area */
+.card-image-wrapper {
+    position: relative;
+    height: 280px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1b1b1b;
+    box-sizing: border-box;
+}
+
+/* Image container */
+.feature_product {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Preserve the full sticker artwork */
+.product-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Product information */
+.card-meta {
+    padding: 20px;
+}
+
+.product-name {
+    margin: 0 0 8px;
+    font-size: 20px;
+    line-height: 1.35;
+}
+
+.artist-attribution {
+    margin: 0 0 14px;
+    color: #aaa;
+}
+
+.rating-block {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 20px;
+}
+
+.card-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.currency-price {
+    color: #ff4500;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+    .stickers-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .stickers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-image-wrapper {
+        height: 260px;
+    }
+}
+
