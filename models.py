@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -142,3 +143,41 @@ class Purchase(db.Model):
 
     user = db.relationship("User", backref="purchases")
     sticker = db.relationship("Sticker")
+
+
+class Design(db.Model):
+    """A sticker sheet saved from the React print studio."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False,
+        index=True
+    )
+
+    title = db.Column(db.String(120), nullable=False)
+
+    # Sheet layout as JSON. Images are stored as upload URLs, not inline.
+    data = db.Column(
+        db.Text().with_variant(MEDIUMTEXT(), "mysql"),
+        nullable=False
+    )
+
+    thumbnail = db.Column(db.String(255), nullable=True)
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
+    )
+
+    user = db.relationship("User", backref="designs")

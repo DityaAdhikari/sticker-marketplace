@@ -48,6 +48,13 @@ The project demonstrates practical database concepts such as entities, relations
 - Manage categories
 - Manage orders
 
+### Print Studio
+- Design A5 sticker sheets in the browser (React app in `frontend/`)
+- Background removal, die-cut outlines, shadows, backdrops and text stickers
+- Exact millimetre sizing, duplicate and layer ordering
+- Print-ready PDF (exact A5 size) and 300 DPI PNG export, per-sticker PNG download
+- Save sheets to your account (MySQL) and publish stickers to the shop (artists)
+
 ## Database
 
 The system uses a relational database to store and manage:
@@ -102,3 +109,24 @@ sticker-marketplace/
 ├── static/
 │
 └── instance/
+
+## Running the Print Studio
+
+The studio is a React app served by Flask at `/studio`.
+
+```bash
+# Development: run Flask and Vite side by side
+python app.py                 # Flask on http://localhost:5000
+cd frontend && npm run dev    # Studio on http://localhost:5173/studio/
+```
+
+Open the studio at `localhost` (not `127.0.0.1`) so it shares the Flask login
+cookie. Vite proxies `/api` and `/static` to Flask.
+
+```bash
+# Production: build once, then Flask serves it at /studio
+cd frontend && npm run build
+```
+
+Set `DATABASE_URL` to use a different database than the default local MySQL.
+

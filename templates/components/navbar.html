@@ -42,6 +42,11 @@
     Artists
 </a>
 
+<a href="{{ url_for('studio_api.studio') }}"
+   class="nav-item {{ 'active' if request.endpoint == 'studio_api.studio' }}">
+    Studio
+</a>
+
 <a href="{{ url_for('about') }}"
    class="nav-item {{ 'active' if request.endpoint == 'about' }}">
     About

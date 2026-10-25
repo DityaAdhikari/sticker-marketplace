@@ -6,6 +6,7 @@ import os
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase
+from studio_api import studio_api
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Sticker, Artist, Category, Wishlist , Purchase
@@ -19,13 +20,18 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-only-fallback-key")
 
 ADMIN_EMAIL = "adhikari2186@gmail.com"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = (
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
     "mysql+pymysql://root:@localhost:3307/sticker_site"
 )
+
+# Studio uploads (artwork, thumbnails, published stickers).
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+app.register_blueprint(studio_api)
 
 with app.app_context():
    
