@@ -2,56 +2,97 @@
 
 {% block title %}Create Sticker - StickerNest{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/artists.css') }}">
+{% endblock %}
+
 {% block content %}
 
-<div class="artist-dashboard">
+<div class="artist-form-page">
 
-    <h1>Create Sticker</h1>
-    <p>Add a new sticker to your collection.</p>
+    <a href="{{ url_for('artist_dashboard') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to dashboard
+    </a>
+
+    <div class="artist-form-header">
+        <h1>Create Sticker</h1>
+        <p>Upload your artwork and add its details to list it in the shop.</p>
+    </div>
 
     <form method="POST"
           action="{{ url_for('create_sticker') }}"
-          enctype="multipart/form-data">
+          enctype="multipart/form-data"
+          class="artist-sticker-form">
 
-        <div>
+        {% if studio_asset %}
+            <input type="hidden" name="studio_asset" value="{{ studio_asset }}">
+        {% endif %}
+
+        <div class="form-field">
+            <label for="image">Sticker Image</label>
+
+            {% if studio_asset %}
+                <div class="current-sticker-image">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + studio_asset) }}"
+                        alt="Sticker customized in the Studio"
+                    >
+                    <p>Customized in the Studio. Upload a file only if you want to replace it.</p>
+                </div>
+            {% endif %}
+
+            <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/png,image/jpeg,image/webp"
+                {{ '' if studio_asset else 'required' }}
+            >
+        </div>
+
+        <div class="form-field">
             <label for="name">Sticker Name</label>
             <input
                 type="text"
                 id="name"
                 name="name"
+                maxlength="100"
+                value="{{ form.get('name', '') }}"
                 required
             >
         </div>
 
-        <div>
+        <div class="form-field">
             <label for="description">Description</label>
             <textarea
                 id="description"
                 name="description"
                 rows="4"
-            ></textarea>
+            >{{ form.get('description', '') }}</textarea>
         </div>
 
-        <div>
-            <label for="price">Price</label>
+        <div class="form-field">
+            <label for="price">Price (Rs.)</label>
             <input
                 type="number"
                 id="price"
                 name="price"
                 step="0.01"
                 min="0"
+                value="{{ form.get('price', '') }}"
                 required
             >
         </div>
 
-        <div>
+        <div class="form-field">
             <label for="category">Category</label>
 
             <select id="category" name="category_id" required>
                 <option value="">Select a category</option>
 
                 {% for category in categories %}
-                    <option value="{{ category.id }}">
+                    <option value="{{ category.id }}"
+                        {{ 'selected' if form.get('category_id') == category.id|string }}>
                         {{ category.name }}
                     </option>
                 {% endfor %}
@@ -59,21 +100,15 @@
             </select>
         </div>
 
-        <div>
-            <label for="image">Sticker Image</label>
+        <div class="form-actions">
+            <button type="submit" class="artist-btn">
+                Publish Sticker
+            </button>
 
-            <input
-                type="file"
-                id="image"
-                name="image"
-                accept="image/*"
-                required
-            >
+            <a href="{{ url_for('artist_dashboard') }}" class="cancel-btn">
+                Cancel
+            </a>
         </div>
-
-        <button type="submit" class="artist-btn">
-            Publish Sticker
-        </button>
 
     </form>
 

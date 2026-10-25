@@ -6,16 +6,46 @@ import os
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase
-from studio_api import studio_api
+from studio_api import studio_api, studio_asset_exists, claim_studio_asset
 
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Sticker, Artist, Category, Wishlist , Purchase
-import os
+from sqlalchemy import func
+from dotenv import load_dotenv
+import secrets
 
+load_dotenv()
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-only-fallback-key")
+
+
+def load_secret_key():
+    """Use SECRET_KEY from the environment, otherwise a random key kept in
+    instance/secret_key. A known default key would let anyone forge a
+    session cookie and log in as any user without a password."""
+    key = os.environ.get("SECRET_KEY")
+    if key:
+        return key
+
+    path = os.path.join(app.instance_path, "secret_key")
+    if os.path.exists(path):
+        with open(path) as file:
+            return file.read().strip()
+
+    os.makedirs(app.instance_path, exist_ok=True)
+    key = secrets.token_hex(32)
+    with open(path, "w") as file:
+        file.write(key)
+    return key
+
+
+app.secret_key = load_secret_key()
+
+MIN_PASSWORD_LENGTH = 8
+
+# Checked when an email isn't registered, so a failed login takes the same
+# time either way and doesn't reveal which emails have accounts.
+DUMMY_PASSWORD_HASH = generate_password_hash(secrets.token_hex(16))
 
 
 ADMIN_EMAIL = "adhikari2186@gmail.com"
@@ -44,10 +74,42 @@ def inject_categories():
 
 @app.route("/")
 def home():
-      
-    stickers = Sticker.query.limit(6).all()
+    # Likes are wishlist saves; count them per sticker.
+    likes = (
+        db.session.query(
+            Wishlist.sticker_id,
+            func.count(Wishlist.id).label("like_count")
+        )
+        .group_by(Wishlist.sticker_id)
+        .subquery()
+    )
+    like_count = func.coalesce(likes.c.like_count, 0)
+
+    # Only stickers uploaded by real artist accounts, most liked first.
+    featured = (
+        db.session.query(Sticker, like_count)
+        .join(Artist, Sticker.artist_id == Artist.id)
+        .outerjoin(likes, likes.c.sticker_id == Sticker.id)
+        .filter(Artist.user_id.isnot(None))
+        .order_by(like_count.desc(), Sticker.id.desc())
+        .limit(6)
+        .all()
+    )
+
+    liked_ids = set()
+    if "user_id" in session:
+        liked_ids = {
+            item.sticker_id
+            for item in Wishlist.query.filter_by(user_id=session["user_id"])
+        }
+
     categories = Category.query.all()
-    return render_template("index.html", stickers=stickers, categories=categories)
+    return render_template(
+        "index.html",
+        featured=featured,
+        liked_ids=liked_ids,
+        categories=categories
+    )
 
 @app.route("/shop")
 def shop():
@@ -88,12 +150,32 @@ def artist_profile(artist_id):
 
     stickers = Sticker.query.filter_by(
         artist_id=artist.id
-    ).all()
+    ).order_by(Sticker.id.desc()).all()
+
+    like_counts = {}
+    if stickers:
+        like_counts = dict(
+            db.session.query(Wishlist.sticker_id, func.count(Wishlist.id))
+            .filter(Wishlist.sticker_id.in_([s.id for s in stickers]))
+            .group_by(Wishlist.sticker_id)
+            .all()
+        )
+
+    liked_ids = set()
+    if "user_id" in session:
+        liked_ids = {
+            item.sticker_id
+            for item in Wishlist.query.filter_by(user_id=session["user_id"])
+        }
 
     return render_template(
         "artist/profile.html",
         artist=artist,
-        stickers=stickers
+        stickers=stickers,
+        like_counts=like_counts,
+        total_likes=sum(like_counts.values()),
+        liked_ids=liked_ids,
+        is_owner=artist.user_id is not None and artist.user_id == session.get("user_id")
     )
 
 @app.route("/apply-artist", methods=["POST"])
@@ -147,21 +229,29 @@ def about():
 def contact():
     return render_template("contact.html")
 
-    if session.get("user_id"):
-        return redirect(url_for("home"))
+
+def find_user_by_email(email):
+    return User.query.filter(func.lower(User.email) == email).first()
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+
     if request.method == "POST":
 
-        email = request.form["email"]
-        password = request.form["password"]
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
 
-        user = User.query.filter_by(email=email).first()
+        user = find_user_by_email(email)
+        password_hash = user.password_hash if user else DUMMY_PASSWORD_HASH
 
-        if user and check_password_hash(user.password_hash, password):
+        if check_password_hash(password_hash, password) and user:
 
+            # Start a fresh session so nothing from before login carries over.
+            session.clear()
             session["user_id"] = user.id
             session["user_name"] = user.name
 
@@ -172,18 +262,33 @@ def login():
 
     return render_template("login.html")
 
-    if session.get("user_id"):
-        return redirect(url_for("home"))
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+
     if request.method == "POST":
 
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
 
-        existing_user = User.query.filter_by(email=email).first()
+        if not name or not email or not password:
+            flash("Please fill in all fields.")
+            return redirect(url_for("register"))
+
+        if len(password) < MIN_PASSWORD_LENGTH:
+            flash(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
+            return redirect(url_for("register"))
+
+        if password != confirm_password:
+            flash("Passwords do not match.")
+            return redirect(url_for("register"))
+
+        existing_user = find_user_by_email(email)
 
         if existing_user:
             flash("Email already exists.")
@@ -357,13 +462,26 @@ def artist_dashboard():
         flash("Access denied.")
         return redirect(url_for("profile"))
     
-    stickers = Sticker.query.filter_by(artist_id=artist.id).all()
+    stickers = Sticker.query.filter_by(
+        artist_id=artist.id
+    ).order_by(Sticker.id.desc()).all()
+
+    like_counts = {}
+    if stickers:
+        like_counts = dict(
+            db.session.query(Wishlist.sticker_id, func.count(Wishlist.id))
+            .filter(Wishlist.sticker_id.in_([s.id for s in stickers]))
+            .group_by(Wishlist.sticker_id)
+            .all()
+        )
 
     return render_template(
         "artist/dashboard.html",
         user=user,
         artist=artist,
-        stickers=stickers
+        stickers=stickers,
+        like_counts=like_counts,
+        total_likes=sum(like_counts.values())
     )
 
 
@@ -387,6 +505,21 @@ def create_sticker():
 
     categories = Category.query.all()
 
+    # A sticker sent over from the Print Studio, e.g. ?studio_asset=studio/<id>.png
+    studio_asset = request.values.get("studio_asset", "")
+    if studio_asset and not studio_asset_exists(studio_asset):
+        flash("That studio sticker could not be found. Please send it again.")
+        studio_asset = ""
+
+    def show_form():
+        return render_template(
+            "artist/create_sticker.html",
+            user=user,
+            categories=categories,
+            studio_asset=studio_asset,
+            form=request.values
+        )
+
     if request.method == "POST":
 
         name = request.form.get("name")
@@ -394,35 +527,32 @@ def create_sticker():
         price = request.form.get("price")
         category_id = request.form.get("category_id")
         image = request.files.get("image")
+        has_upload = bool(image and image.filename)
 
-        if not name or not price or not category_id or not image:
+        if not name or not price or not category_id or not (has_upload or studio_asset):
             flash("Please fill in all required fields.")
-            return render_template(
-                "artist/create_sticker.html",
-                user=user,
-                categories=categories
+            return show_form()
+
+        # An uploaded file wins over the studio sticker.
+        if has_upload:
+            filename = secure_filename(image.filename)
+
+            if not filename:
+                flash("Invalid image file.")
+                return show_form()
+
+            upload_folder = os.path.join(
+                app.static_folder,
+                "uploads"
             )
 
-        filename = secure_filename(image.filename)
+            os.makedirs(upload_folder, exist_ok=True)
 
-        if not filename:
-            flash("Invalid image file.")
-            return render_template(
-                "artist/create_sticker.html",
-                user=user,
-                categories=categories
+            image.save(
+                os.path.join(upload_folder, filename)
             )
-
-        upload_folder = os.path.join(
-            app.static_folder,
-            "uploads"
-        )
-
-        os.makedirs(upload_folder, exist_ok=True)
-
-        image.save(
-            os.path.join(upload_folder, filename)
-        )
+        else:
+            filename = claim_studio_asset(studio_asset)
 
         sticker = Sticker(
             name=name,
@@ -439,11 +569,7 @@ def create_sticker():
         flash("Sticker published successfully!")
         return redirect(url_for("artist_dashboard"))
 
-    return render_template(
-        "artist/create_sticker.html",
-        user=user,
-        categories=categories
-    )
+    return show_form()
 
 @app.route("/artist/sticker/edit/<int:sticker_id>", methods=["GET", "POST"])
 @app.route("/edit-sticker/<int:sticker_id>", methods=["GET", "POST"])
@@ -533,6 +659,12 @@ def delete_sticker(sticker_id):
         flash("You can only delete your own stickers.")
         return redirect(url_for("artist_dashboard"))
 
+    # Keep order history intact: purchased stickers can't be deleted.
+    if Purchase.query.filter_by(sticker_id=sticker.id).first():
+        flash("This sticker has been purchased, so it can't be deleted. Edit it instead.")
+        return redirect(url_for("artist_dashboard"))
+
+    Wishlist.query.filter_by(sticker_id=sticker.id).delete()
     db.session.delete(sticker)
     db.session.commit()
 

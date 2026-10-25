@@ -30,14 +30,6 @@
         <a href="{{ url_for('shop') }}" class="btn btn-secondary">Shop Now</a>
       </div>
 
-      <div class="hero-supporters">
-        <div class="avatar-group">
-          <img src="{{ url_for('static', filename='images/artist1.jpg') }}" alt="Artist" class="avatar">
-          <img src="{{ url_for('static', filename='images/artist2.jpg') }}" alt="Artist" class="avatar">
-          <img src="{{ url_for('static', filename='images/artist3.jpg') }}" alt="Artist" class="avatar">
-        </div>
-        <p class="supporters-text">Supporting local artists <span class="heart">❤️</span></p>
-      </div>
     </div>
 
    
@@ -79,23 +71,36 @@
   </div>
 
   <div class="stickers-grid">
-    {% for sticker in stickers %}
+    {% for sticker, like_count in featured %}
+    {% set liked = sticker.id in liked_ids %}
     <div class="sticker-card" data-id="{{ sticker.id }}">
       <div class="card-image-wrapper">
-        <button class="wishlist-toggle-btn" aria-label="Add to wishlist">
-          <i class="fa-regular fa-heart"></i>
-        </button>
+        <form method="POST"
+              action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}"
+              class="wishlist-form">
+          <button type="submit"
+                  class="wishlist-toggle-btn {{ 'liked' if liked }}"
+                  aria-label="{{ 'Unlike' if liked else 'Like' }} {{ sticker.name }}">
+            <i class="{{ 'fa-solid' if liked else 'fa-regular' }} fa-heart"></i>
+          </button>
+        </form>
         <div class="feature_product">
-          <img src="{{ url_for('static', filename='images/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
+          <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+            <img src="{{ url_for('static', filename='uploads/' + sticker.image) }}" alt="{{ sticker.name }}" class="product-img">
+          </a>
         </div>
       </div>
       <div class="card-meta">
-        <h3 class="product-name">{{ sticker.name }}</h3>
-        <p class="artist-attribution">by <span class="artist-name">{{ sticker.artist.handle }}</span></p>
+        <h3 class="product-name">
+          <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">{{ sticker.name }}</a>
+        </h3>
+        <p class="artist-attribution">by
+          <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}" class="artist-name">{{ sticker.artist.handle or sticker.artist.name }}</a>
+        </p>
         <div class="rating-block">
-          <i class="fa-solid fa-star"></i>
-          <span class="rating-value">{{ sticker.rating }}</span>
-          <span class="review-count">({{ sticker.review_count }})</span>
+          <i class="fa-solid fa-heart"></i>
+          <span class="rating-value">{{ like_count }}</span>
+          <span class="review-count">{{ 'like' if like_count == 1 else 'likes' }}</span>
         </div>
         <div class="card-action-row">
           <span class="currency-price">Rs. {{ sticker.price | int }}</span>
@@ -103,6 +108,8 @@
         </div>
       </div>
     </div>
+    {% else %}
+    <p>No artist stickers yet. Check back soon!</p>
     {% endfor %}
   </div>
 </section>

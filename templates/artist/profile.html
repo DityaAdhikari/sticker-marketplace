@@ -1,100 +1,181 @@
 {% extends "base.html" %}
 
-{% block title %}{{ artist.name }} - StickerNest{% endblock %}
+{% block title %}{{ artist.display_name }} - StickerNest{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/artists.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
 {% endblock %}
 
 {% block content %}
 
+<div class="profile-page">
+
+    <section class="profile-header">
+
+        <div class="profile-picture-wrapper">
+
+            {% if artist.profile_image %}
+
+                <img
+                    src="{{ url_for('static', filename='uploads/' + artist.profile_image) }}"
+                    alt="{{ artist.display_name }}"
+                    class="profile-picture"
+                >
+
+            {% else %}
+
+                <div class="profile-picture default-avatar">
+                    {{ artist.display_name[0]|upper }}
+                </div>
+
+            {% endif %}
+
+        </div>
 
 
-<div class="artist-profile">
+        <div class="profile-info">
 
-    <div class="artist-profile-header">
+            <h1>{{ artist.display_name }}</h1>
 
-        {% if artist.avatar %}
-            <img
-                src="{{ url_for('static', filename='uploads/' + artist.avatar) }}"
-                alt="{{ artist.name }}"
-                class="artist-profile-avatar"
-            >
-        {% else %}
-            <div class="artist-profile-avatar default-avatar">
-                {{ artist.name[0]|upper }}
-            </div>
-        {% endif %}
+            <p class="username">{{ artist.handle or '@' + artist.display_name }}</p>
 
-        <h1>{{ artist.name }}</h1>
+            {% if artist.display_bio %}
 
-        <p class="artist-handle">
-            {{ artist.handle }}
-        </p>
+                <p class="bio">
+                    {{ artist.display_bio }}
+                </p>
 
-        {% if artist.bio %}
-            <p class="artist-bio">
-                {{ artist.bio }}
-            </p>
-        {% endif %}
+            {% else %}
 
-        <p>
-            {{ stickers|length }} stickers
-        </p>
+                <p class="bio">
+                    No bio yet.
+                </p>
 
-    </div>
+            {% endif %}
 
 
-    <section class="artist-stickers">
+            {% if artist.location %}
 
-        <h2>Stickers by {{ artist.name }}</h2>
+                <p class="location">
+                    📍 {{ artist.location }}
+                </p>
+
+            {% endif %}
+
+
+            {% if is_owner %}
+
+                <div class="profile-actions">
+
+                    <a
+                        href="{{ url_for('edit_profile') }}"
+                        class="edit-profile-btn"
+                    >
+                        Edit Profile
+                    </a>
+
+                    <a
+                        href="{{ url_for('artist_dashboard') }}"
+                        class="artist-btn"
+                    >
+                        Artist Dashboard
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <section class="profile-stats">
+
+        <div class="stat-card">
+            <span class="stat-number">{{ stickers|length }}</span>
+            <span class="stat-label">Stickers</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-number">{{ total_likes }}</span>
+            <span class="stat-label">Likes</span>
+        </div>
+
+    </section>
+
+
+    <nav class="profile-tabs">
+
+        <a href="#created" class="profile-tab active">
+            Stickers
+        </a>
+
+    </nav>
+
+
+    <section class="profile-section" id="created">
+        <div class="section-heading">
+            <h2>Stickers by {{ artist.display_name }}</h2>
+            <p>Original stickers published on StickerNest.</p>
+        </div>
 
         {% if stickers %}
-
             <div class="stickers-grid">
-
                 {% for sticker in stickers %}
-
+                    {% set liked = sticker.id in liked_ids %}
+                    {% set like_count = like_counts.get(sticker.id, 0) %}
                     <div class="sticker-card">
-
                         <div class="card-image-wrapper">
-
-                            <img
-                                src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
-                                alt="{{ sticker.name }}"
-                                class="product-img"
+                            <form
+                                method="POST"
+                                action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}"
+                                class="wishlist-form"
                             >
+                                <button
+                                    type="submit"
+                                    class="wishlist-toggle-btn {{ 'liked' if liked }}"
+                                    aria-label="{{ 'Unlike' if liked else 'Like' }} {{ sticker.name }}"
+                                >
+                                    <i class="{{ 'fa-solid' if liked else 'fa-regular' }} fa-heart"></i>
+                                </button>
+                            </form>
 
+                            <div class="feature_product">
+                                <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+                                    <img
+                                        src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                                        alt="{{ sticker.name }}"
+                                        class="product-img"
+                                    >
+                                </a>
+                            </div>
                         </div>
 
                         <div class="card-meta">
-
                             <h3 class="product-name">
-                                {{ sticker.name }}
+                                <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">{{ sticker.name }}</a>
                             </h3>
-
-                            {% if sticker.description %}
-                                <p>{{ sticker.description }}</p>
-                            {% endif %}
-
-                            <span class="currency-price">
-                                Rs. {{ sticker.price|int }}
-                            </span>
-
+                            <div class="rating-block">
+                                <i class="fa-solid fa-heart"></i>
+                                <span class="rating-value">{{ like_count }}</span>
+                                <span class="review-count">{{ 'like' if like_count == 1 else 'likes' }}</span>
+                            </div>
+                            <span class="currency-price">Rs. {{ sticker.price|int }}</span>
                         </div>
-
                     </div>
-
                 {% endfor %}
-
             </div>
-
         {% else %}
-
-            <p>This artist hasn't published any stickers yet.</p>
-
+            <div class="empty-profile">
+                <div class="empty-icon">✦</div>
+                <h3>No stickers yet</h3>
+                <p>{{ artist.display_name }} hasn't published any stickers yet.</p>
+                {% if is_owner %}
+                    <a href="{{ url_for('studio_api.studio') }}">Customize Your Sticker</a>
+                {% endif %}
+            </div>
         {% endif %}
-
     </section>
 
 </div>

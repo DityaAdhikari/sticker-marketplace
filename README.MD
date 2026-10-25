@@ -53,7 +53,7 @@ The project demonstrates practical database concepts such as entities, relations
 - Background removal, die-cut outlines, shadows, backdrops and text stickers
 - Exact millimetre sizing, duplicate and layer ordering
 - Print-ready PDF (exact A5 size) and 300 DPI PNG export, per-sticker PNG download
-- Save sheets to your account (MySQL) and publish stickers to the shop (artists)
+- Save sheets to your account (MySQL); artists can send a sticker to Create Sticker to sell it
 
 ## Database
 

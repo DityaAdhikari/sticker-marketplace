@@ -6,6 +6,8 @@ saved under static/uploads/studio/ and referenced by URL.
 
 import json
 import os
+import re
+import shutil
 import uuid
 
 from flask import (
@@ -21,7 +23,7 @@ from flask import (
     url_for,
 )
 
-from models import db, User, Artist, Category, Sticker, Design
+from models import db, User, Design
 
 
 studio_api = Blueprint("studio_api", __name__)
@@ -38,6 +40,9 @@ STUDIO_DEV_SERVER = os.environ.get(
 )
 
 MAX_DESIGN_JSON = 1024 * 1024
+
+# Stickers sent from the studio to the Create Sticker form.
+STUDIO_ASSET_PATTERN = re.compile(r"^studio/[0-9a-f]{32}\.png$")
 
 # File signatures, so uploads are checked by content rather than filename.
 IMAGE_SIGNATURES = {
@@ -110,6 +115,25 @@ def remove_upload(relative_path):
     path = os.path.join(current_app.static_folder, "uploads", relative_path)
     if os.path.isfile(path):
         os.remove(path)
+
+
+def studio_asset_exists(relative_path):
+    return bool(STUDIO_ASSET_PATTERN.match(relative_path)) and os.path.isfile(
+        os.path.join(current_app.static_folder, "uploads", relative_path)
+    )
+
+
+def claim_studio_asset(relative_path):
+    """Copy a studio upload into static/uploads/ for a shop listing, so the
+    listing keeps its image even if the studio design is deleted. Returns the
+    new filename relative to static/uploads/."""
+    uploads = os.path.join(current_app.static_folder, "uploads")
+    filename = f"{uuid.uuid4().hex}.png"
+    shutil.copyfile(
+        os.path.join(uploads, relative_path),
+        os.path.join(uploads, filename)
+    )
+    return filename
 
 
 def design_summary(design):
@@ -187,14 +211,6 @@ def me():
         "name": user.name,
         "role": user.role,
     })
-
-
-@studio_api.route("/api/categories")
-def categories():
-    return jsonify(categories=[
-        {"id": category.id, "name": category.name}
-        for category in Category.query.order_by(Category.name).all()
-    ])
 
 
 # ---------- Assets ----------
@@ -287,56 +303,3 @@ def delete_design(design_id):
     db.session.commit()
 
     return jsonify(deleted=design_id)
-
-
-# ---------- Publishing ----------
-
-@studio_api.route("/api/studio/publish", methods=["POST"])
-def publish_sticker():
-    """Turn a sticker rendered in the studio into a shop listing."""
-    user = current_user()
-    if not user:
-        return api_error("Please log in.", 401)
-
-    artist = Artist.query.filter_by(user_id=user.id).first()
-    if user.role != "artist" or not artist:
-        return api_error("Only approved artists can publish stickers.", 403)
-
-    name = (request.form.get("name") or "").strip()
-    description = (request.form.get("description") or "").strip()
-
-    try:
-        price = float(request.form.get("price", ""))
-        category_id = int(request.form.get("category_id", ""))
-    except ValueError:
-        return api_error("Enter a valid price and category.")
-
-    if not name or len(name) > 100:
-        return api_error("Give the sticker a name of up to 100 characters.")
-
-    if price < 0:
-        return api_error("Price cannot be negative.")
-
-    if not Category.query.get(category_id):
-        return api_error("Choose a valid category.")
-
-    image = save_upload(request.files.get("image"), "", ("png",))
-    if not image:
-        return api_error("The sticker image must be a PNG.")
-
-    sticker = Sticker(
-        name=name,
-        description=description or None,
-        price=price,
-        image=image,
-        artist_id=artist.id,
-        category_id=category_id
-    )
-
-    db.session.add(sticker)
-    db.session.commit()
-
-    return jsonify(sticker={
-        "id": sticker.id,
-        "url": url_for("sticker_detail", sticker_id=sticker.id),
-    }), 201

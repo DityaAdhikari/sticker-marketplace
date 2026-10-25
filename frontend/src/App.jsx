@@ -19,11 +19,9 @@ import { canvasToBlob, downloadBlob, pdfFromCanvas, pngWithDpi } from './lib/exp
 import {
   FLASK_URL,
   deleteDesign,
-  getCategories,
   getCurrentUser,
   getDesign,
   listDesigns,
-  publishSticker,
   saveDesign,
   uploadAsset,
 } from './lib/api.js'
@@ -260,13 +258,6 @@ function App() {
   const [designs, setDesigns] = useState([])
   const [currentDesign, setCurrentDesign] = useState(null)
   const [designTitle, setDesignTitle] = useState('My sticker sheet')
-  const [categories, setCategories] = useState([])
-  const [publishForm, setPublishForm] = useState({
-    name: '',
-    description: '',
-    price: '',
-    categoryId: '',
-  })
 
   const selectedSticker =
     stickers.find((sticker) => sticker.id === selectedId) ?? null
@@ -314,12 +305,6 @@ function App() {
     listDesigns()
       .then(setDesigns)
       .catch((error) => setMessage(error.message))
-
-    if (user.role === 'artist') {
-      getCategories()
-        .then(setCategories)
-        .catch((error) => setMessage(error.message))
-    }
   }, [user])
 
   // Upload several image files at once.
@@ -825,17 +810,32 @@ function App() {
     }, 'Could not delete that design.')
   }
 
-  function publishSelected(event) {
-    event.preventDefault()
+  // Hand the rendered sticker to the Flask Create Sticker form, where the
+  // artist sets its name, price and category.
+  function sellSelected() {
     const sticker = selectedSticker
     if (!sticker) return
 
     return runTask(async () => {
+      try {
+        writeLocalDraft(stickers, sheet)
+      } catch (error) {
+        console.error('Could not save draft before leaving:', error)
+      }
+
       const image = await pngWithDpi(renderStickerImage(sticker, EXPORT_SCALE), 300)
-      await publishSticker({ image, ...publishForm })
-      setPublishForm((current) => ({ ...current, name: '', description: '', price: '' }))
-      setMessage(`"${publishForm.name}" is now listed in the shop.`)
-    }, 'Could not publish this sticker.')
+      const url = await uploadAsset(image, 'sticker.png')
+      const name =
+        sticker.kind === 'text'
+          ? sticker.text.content.split('\n')[0]
+          : sticker.name.replace(/\.[a-z0-9]+$/i, '')
+
+      const params = new URLSearchParams({
+        studio_asset: url.replace(/^\/static\/uploads\//, ''),
+        name: name.trim().slice(0, 100),
+      })
+      window.location.href = `${FLASK_URL}/create-sticker?${params}`
+    }, 'Could not send this sticker to Create Sticker.')
   }
 
   // Autosave the draft to localStorage one second after the last change.
@@ -1334,60 +1334,24 @@ function App() {
                   </section>
 
                   {user?.role === 'artist' && (
-                    <form className="control-section" onSubmit={publishSelected}>
-                      <h3>07 / Publish to shop</h3>
-                      <input
-                        className="text-input"
-                        placeholder="Sticker name"
-                        required
-                        maxLength={100}
-                        value={publishForm.name}
-                        onChange={(event) =>
-                          setPublishForm({ ...publishForm, name: event.target.value })
-                        }
-                      />
-                      <textarea
-                        className="text-input"
-                        placeholder="Description (optional)"
-                        rows={2}
-                        value={publishForm.description}
-                        onChange={(event) =>
-                          setPublishForm({ ...publishForm, description: event.target.value })
-                        }
-                      />
-                      <div className="number-grid">
-                        <input
-                          className="text-input"
-                          type="number"
-                          placeholder="Price"
-                          min="0"
-                          step="0.01"
-                          required
-                          value={publishForm.price}
-                          onChange={(event) =>
-                            setPublishForm({ ...publishForm, price: event.target.value })
-                          }
-                        />
-                        <select
-                          className="text-input"
-                          required
-                          value={publishForm.categoryId}
-                          onChange={(event) =>
-                            setPublishForm({ ...publishForm, categoryId: event.target.value })
-                          }
-                        >
-                          <option value="">Category</option>
-                          {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <button className="primary-button full-button" disabled={busy}>
-                        Publish this sticker
+                    <section className="control-section">
+                      <h3>07 / Sell in the shop</h3>
+                      <p className="small-note">
+                        Send this sticker to Create Sticker to set its name, price
+                        and category. Your sheet is saved as a draft first.
+                      </p>
+                      <button
+                        className="primary-button full-button"
+                        onClick={sellSelected}
+                        disabled={busy}
+                      >
+                        Sell this sticker
                       </button>
-                    </form>
+                      <p className="small-note">
+                        Already have a finished image?{' '}
+                        <a href={`${FLASK_URL}/create-sticker`}>Upload it directly</a>
+                      </p>
+                    </section>
                   )}
                 </Fragment>
               ) : (

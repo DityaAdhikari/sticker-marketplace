@@ -34,10 +34,6 @@ export function getCurrentUser() {
   return request('/api/me').then((data) => data.user)
 }
 
-export function getCategories() {
-  return request('/api/categories').then((data) => data.categories)
-}
-
 export function uploadAsset(blob, filename = 'asset.png') {
   const form = new FormData()
   form.append('file', blob, filename)
@@ -68,14 +64,4 @@ export function saveDesign({ id, title, data, thumbnail }) {
 
 export function deleteDesign(id) {
   return request(`/api/studio/designs/${id}`, { method: 'DELETE' })
-}
-
-export function publishSticker({ image, name, description, price, categoryId }) {
-  const form = new FormData()
-  form.append('image', image, 'sticker.png')
-  form.append('name', name)
-  form.append('description', description)
-  form.append('price', price)
-  form.append('category_id', categoryId)
-  return request('/api/studio/publish', { method: 'POST', body: form })
 }

@@ -32,20 +32,21 @@
 
     <!-- Main Content -->
     <main>
-      
-        {% block content %}
-         {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="flash-container">
-        {% for message in messages %}
-          <div class="flash-message">
-            {{ message }}
+
+      <!-- Flash messages sit outside the content block so every page shows them -->
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for message in messages %}
+              <div class="flash-message">
+                {{ message }}
+              </div>
+            {% endfor %}
           </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-{% endblock %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
   
     </main>
 

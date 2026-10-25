@@ -17,12 +17,21 @@
     <div class="artists-grid">
       {% for artist in artists %}
       <div class="artist-card">
+      {% if artist.profile_image %}
+      <img
+        src="{{ url_for('static', filename='uploads/' + artist.profile_image) }}"
+        alt="{{ artist.display_name }}"
+        class="artist-avatar-initials artist-avatar-photo"
+      >
+      {% else %}
       <div class="artist-avatar-initials">
-       {{ artist.name[0]|upper }}
+       {{ artist.display_name[0]|upper }}
       </div>
+      {% endif %}
   <div class="artist-meta">
-    <h3 class="artist-name">{{ artist.handle }}</h3>
-    <p class="artist-bio">{{ artist.bio }}</p>
+    <h3 class="artist-name">{{ artist.display_name }}</h3>
+    <p class="artist-handle-small">{{ artist.handle }}</p>
+    <p class="artist-bio">{{ artist.display_bio or '' }}</p>
     <div class="artist-stats">
       <span class="stat-item"><strong>{{ artist.stickers | length }}</strong> stickers</span>
     </div>

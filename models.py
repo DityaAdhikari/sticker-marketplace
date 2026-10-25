@@ -57,6 +57,24 @@ class Artist(db.Model):
         lazy=True
     )
 
+    # Artists with an account show their live user profile, so edits on
+    # the profile page appear on the public artist page too.
+    @property
+    def display_name(self):
+        return self.user.name if self.user else self.name
+
+    @property
+    def display_bio(self):
+        return (self.user.bio if self.user else None) or self.bio
+
+    @property
+    def profile_image(self):
+        return self.user.profile_image if self.user else None
+
+    @property
+    def location(self):
+        return self.user.location if self.user else None
+
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)

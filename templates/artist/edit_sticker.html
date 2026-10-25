@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Edit Sticker - StickerNest{% endblock %}
@@ -9,24 +8,51 @@
 
 {% block content %}
 
-<div class="artist-dashboard">
+<div class="artist-form-page">
 
-    <h1>Edit Sticker</h1>
+    <a href="{{ url_for('artist_dashboard') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to dashboard
+    </a>
 
-    <form method="POST" enctype="multipart/form-data">
+    <div class="artist-form-header">
+        <h1>Edit Sticker</h1>
+        <p>Update the details or artwork for {{ sticker.name }}.</p>
+    </div>
 
-        <div>
+    <form method="POST" enctype="multipart/form-data" class="artist-sticker-form">
+
+        <div class="form-field">
+            <label for="image">Sticker Image</label>
+
+            <div class="current-sticker-image">
+                <img
+                    src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                    alt="{{ sticker.name }}"
+                >
+                <p>Current image. Upload a new file to replace it.</p>
+            </div>
+
+            <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/png,image/jpeg,image/webp"
+            >
+        </div>
+
+        <div class="form-field">
             <label for="name">Sticker Name</label>
             <input
                 type="text"
                 id="name"
                 name="name"
+                maxlength="100"
                 value="{{ sticker.name }}"
                 required
             >
         </div>
 
-        <div>
+        <div class="form-field">
             <label for="description">Description</label>
             <textarea
                 id="description"
@@ -35,8 +61,8 @@
             >{{ sticker.description or "" }}</textarea>
         </div>
 
-        <div>
-            <label for="price">Price</label>
+        <div class="form-field">
+            <label for="price">Price (Rs.)</label>
             <input
                 type="number"
                 id="price"
@@ -48,7 +74,7 @@
             >
         </div>
 
-        <div>
+        <div class="form-field">
             <label for="category">Category</label>
             <select id="category" name="category_id" required>
                 {% for category in categories %}
@@ -62,23 +88,15 @@
             </select>
         </div>
 
-        <div>
-            <label for="image">Change Image (optional)</label>
-            <input
-                type="file"
-                id="image"
-                name="image"
-                accept="image/*"
-            >
+        <div class="form-actions">
+            <button type="submit" class="artist-btn">
+                Save Changes
+            </button>
+
+            <a href="{{ url_for('artist_dashboard') }}" class="cancel-btn">
+                Cancel
+            </a>
         </div>
-
-        <button type="submit" class="artist-btn">
-            Save Changes
-        </button>
-
-        <a href="{{ url_for('artist_dashboard') }}" class="cancel-btn">
-            Cancel
-        </a>
 
     </form>
 

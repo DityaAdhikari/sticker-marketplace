@@ -481,3 +481,74 @@ a {
     }
 }
 
+
+/* Profile wishlist remove button */
+.remove-wishlist-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 9px 14px;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #ccc;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.remove-wishlist-btn i {
+    color: #ff5a00;
+}
+
+.remove-wishlist-btn:hover {
+    border-color: #ff5a00;
+    color: white;
+}
+
+/* Shared secondary action button (profile, artist dashboard) */
+.artist-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    min-height: 42px;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid #ff5a00;
+    border-radius: 8px;
+    color: #ff5a00;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.artist-btn:hover {
+    background: #ff5a00;
+    color: white;
+}
+
+.artist-btn:disabled {
+    border-color: #444;
+    color: #888;
+    background: transparent;
+    cursor: not-allowed;
+}
+
+.profile-actions .edit-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-height: 42px;
+    margin-top: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+}
