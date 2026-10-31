@@ -3,13 +3,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Arial Black', Impact, sans-serif; /* Fallbacks mimic heavy headings */
 }
 
 body {
-  background-color: #0b0b0b;
-  color: #ffffff;
-  padding: 40px 20px;
+  background-color: var(--bg);
+  color: var(--text);
+  padding: 12px 20px 20px;
 }
 
 /* Container limits width and draws background details */
@@ -17,7 +16,7 @@ body {
   max-width: 1300px;
   margin: 0 auto;
   /* Add subtle background sketch art watermark representation here if desired */
-  background-image: linear-gradient(rgba(11, 11, 11, 0.9), rgba(11, 11, 11, 0.95));
+  background-image: linear-gradient(rgba(248, 244, 237, 0.9), rgba(248, 244, 237, 0.95));
 }
 
 .hero-content-wrapper {
@@ -38,8 +37,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #ff4500;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--accent-text);
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 20px;
@@ -54,13 +53,13 @@ body {
 }
 
 .hero-heading .highlight {
-  color: #ff4500;
+  color: var(--accent-text);
 }
 
 .hero-description {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
-  color: #aaaaaa;
+  color: var(--muted);
   line-height: 1.6;
   margin-bottom: 35px;
   max-width: 480px;
@@ -75,7 +74,7 @@ body {
 
 .btn {
   padding: 14px 28px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   border-radius: 8px;
@@ -84,25 +83,25 @@ body {
 }
 
 .btn-primary {
-  background-color: #ff4500;
-  color: white;
+  background-color: var(--accent);
+  color: var(--text);
   border: none;
 }
 
 .btn-primary:hover {
-  background-color: #e03d00;
+  background-color: var(--accent);
   transform: translateY(-2px);
 }
 
 .btn-secondary {
   background-color: transparent;
-  color: white;
-  border: 1px solid #333333;
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .btn-secondary:hover {
-  border-color: #ff4500;
-  background-color: rgba(255, 69, 0, 0.05);
+  border-color: var(--accent);
+  background-color: rgba(201, 143, 112, 0.08);
 }
 
 /* Right Content: Overlapping Sticker Stack Canvas Base */
@@ -112,160 +111,134 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
-  min-height: 500px; /* Increased slightly to accommodate your custom stickers */
+  min-width: 0;
+  padding: 20px 10px;
 }
 
-/* Container that bounds the stickers */
+/* Die-cut sticker cluster. Positions are percentages of the collage, which
+   keeps its shape at any width, so the arrangement scales on phones. */
 .sticker-collage {
   position: relative;
   width: 100%;
-  max-width: 500px;
-  height: 420px;
+  max-width: 580px;
+  aspect-ratio: 13 / 10;
 }
 
-/* Global rule for ALL stickers to prevent them from breaking the grid */
+.collage-doodles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.doodle-ink {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.doodle-ink.soft {
+  stroke: var(--muted);
+  opacity: 0.75;
+}
+
+.doodle-dash {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-dasharray: 2.2 2.2;
+  opacity: 0.7;
+}
+
+.doodle-leaf {
+  fill: var(--sage);
+  opacity: 0.85;
+}
+
+.doodle-stem {
+  fill: none;
+  stroke: var(--sage-text);
+  stroke-width: 0.6;
+  opacity: 0.6;
+}
+
+/* The PNGs are transparent die-cut art. Stacked drop-shadows trace a white
+   cut line around each shape, then a soft shadow lifts it off the page. */
 .sticker-img {
   position: absolute;
-  border-radius: 16px;
-  background-color: #fff; /* Ensures white boundary background if images don't have built-in padding */
-  border: 4px solid #ffffff; /* Gives the classic white sticker boundary look */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  object-fit: contain;
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), z-index 0.1s ease;
+  height: auto;
+  filter:
+    drop-shadow(4px 0 0 #ffffff)
+    drop-shadow(-4px 0 0 #ffffff)
+    drop-shadow(0 4px 0 #ffffff)
+    drop-shadow(0 -4px 0 #ffffff)
+    drop-shadow(0 10px 14px rgba(73, 51, 38, 0.18));
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Individual Position and Size Control */
-
-/* 1. White Round Overthinker (Top Left) */
-.sticker-overthinker {
-  width: 170px;
-  height: auto;
-  top: 5%;
-  left: 5%;
-  z-index: 2;
-  transform: rotate(-6deg);
-}
-
-/* 2. Glasses "Burn Madafaka" Cat (Top Center/Right) */
-.sticker-burn-cat {
-  width: 165px;
-  height: auto;
-  top: 0%;
-  left: 42%;
+.sticker-pagoda {
+  --tilt: -4deg;
+  width: 35%;
+  left: 1%;
+  top: 22%;
   z-index: 3;
-  transform: rotate(4deg);
 }
 
-/* 3. Cat On Fire (Far Right) */
-.sticker-fire {
-  width: 155px;
-  height: auto;
-  top: 15%;
-  right: -5%;
+.sticker-bus {
+  --tilt: -6deg;
+  width: 33%;
+  left: 27%;
+  top: 4%;
+  z-index: 2;
+}
+
+.sticker-mountains {
+  --tilt: 5deg;
+  width: 39%;
+  left: 59%;
+  top: 1%;
   z-index: 1;
-  transform: rotate(12deg);
 }
 
-/* 4. Cat with Fan (Bottom Center Left) */
-.sticker-fan {
-  width: 180px;
-  height: auto;
-  bottom: -5%;
-  left: 10%;
+.sticker-deity {
+  --tilt: 2deg;
+  width: 31%;
+  left: 33%;
+  top: 31%;
   z-index: 5;
-  transform: rotate(-4deg);
-}
-
-/* 5. "I Am Sorry" Sad Cat (Bottom Right) */
-.sticker-sorry {
-  width: 160px;
-  height: auto;
-  bottom: 0%;
-  right: 5%;
-  z-index: 4;
-  transform: rotate(5deg);
-}
-
-/* Interactive Hover state to pop stickers forward */
-.sticker-img:hover {
-  transform: scale(1.12) rotate(0deg) !important;
-  z-index: 20 !important;
-  cursor: pointer;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-}
-
-/* Right Content: Overlapping Sticker Stack Canvas */
-.hero-right {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  min-height: 450px;
-}
-
-.sticker-collage {
-  position: relative;
-  width: 100%;
-  max-width: 500px;
-  height: 400px;
-}
-
-.sticker-img {
-  position: absolute;
-  border-radius: 12px;
-  border: 4px solid #ffffff; /* Gives the classic crisp cut sticker white outline border look */
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  transition: transform 0.3s ease, z-index 0.1s;
-}
-
-/* Specific position cluster layouts mimicking reference image stacking hierarchy */
-.sticker-temple {
-  top: 10%;
-  left: 5%;
-  z-index: 2;
-  transform: rotate(-5deg);
-}
-
-.sticker-eyes {
-  top: -5%;
-  right: 15%;
-  z-index: 1;
-  transform: rotate(3deg);
-}
-
-.sticker-mask {
-  bottom: 5%;
-  left: 40%;
-  z-index: 4;
-  transform: rotate(1deg);
-}
-
-.sticker-scenic {
-  top: 20%;
-  right: -5%;
-  z-index: 3;
-  transform: rotate(8deg);
 }
 
 .sticker-street {
-  bottom: 0px;
-  right: 5%;
-  z-index: 2;
-  transform: rotate(-4deg);
+  --tilt: -3deg;
+  width: 41%;
+  left: 58%;
+  top: 46%;
+  z-index: 4;
 }
 
-/* Hover dynamic interactions to bring stickers forward */
+/* Pop a sticker forward on hover */
 .sticker-img:hover {
-  transform: scale(1.08) rotate(0deg) !important;
-  z-index: 10 !important;
-  cursor: grab;
+  transform: rotate(0deg) scale(1.06);
+  z-index: 10;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-img {
+    transition: none;
+  }
 }
 
 /* --- CATEGORIES SHELF LAYOUT --- */
 .categories-shelf {
-  background-color: #121212;
-  border: 1px solid #1a1a1a;
+  background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: 24px;
   padding: 30px;
   margin-top: 20px;
@@ -279,14 +252,14 @@ body {
 }
 
 .shelf-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 600;
 }
 
 .view-all-link {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #ff4500;
+  font-family: var(--font-body);
+  color: var(--accent-text);
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
@@ -299,68 +272,150 @@ body {
   text-decoration: underline;
 }
 
-/* Flex Grid Category Layout */
+/* Horizontally scrolling category row: snaps to cards, arrows in the header */
+.shelf-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shelf-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.shelf-arrow:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.shelf-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.shelf-controls .view-all-link {
+  margin-left: 6px;
+}
+
 .categories-grid {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  overflow-x: auto; /* Handles overflowing categories on small devices safely */
-  padding-bottom: 10px;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 2px;
+  overscroll-behavior-x: contain;
+  padding: 4px 2px 8px;
+  /* Still scrollable by swipe, trackpad, keyboard and the arrows */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.categories-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .category-card {
+  flex: 0 0 148px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  min-width: 80px;
+  gap: 4px;
+  padding: 12px 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  scroll-snap-align: start;
+  text-align: center;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.category-card span {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 12px;
-  color: #888888;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-
-.icon-circle {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  border: 1px solid #222222;
+.category-thumb {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  color: #888888;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 120px;
+  height: 120px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--sage-soft);
+  color: var(--sage-text);
+  font-size: 34px;
 }
 
-/* Hover States */
-.category-card:hover .icon-circle {
-  border-color: #ff4500;
-  color: #ffffff;
-  transform: translateY(-3px);
+.category-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
-.category-card:hover span {
-  color: #ffffff;
-}
-
-/* Highlighted Active Category State */
-.category-card.active .icon-circle {
-  border-color: #ff4500;
-  background-color: rgba(255, 69, 0, 0.05);
-  color: #ff4500;
-  box-shadow: 0 0 15px rgba(255, 69, 0, 0.2);
-}
-
-.category-card.active span {
-  color: #ff4500;
+.category-name {
+  font-family: var(--font-body);
+  font-size: 14px;
   font-weight: 600;
+  color: var(--text);
+}
+
+.category-count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.category-card:hover,
+.category-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 22px rgba(73, 51, 38, 0.1);
+}
+
+.category-card:hover .category-thumb img {
+  transform: scale(1.05);
+}
+
+.category-card:hover .category-name {
+  color: var(--accent-text);
+}
+
+.categories-shelf {
+  margin-bottom: 30px;
+}
+
+@media (max-width: 600px) {
+  .categories-shelf {
+    padding: 20px 16px;
+  }
+
+  .shelf-arrow {
+    display: none;
+  }
+
+  .category-card {
+    flex-basis: 124px;
+  }
+
+  .category-thumb {
+    width: 98px;
+    height: 98px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .categories-grid {
+    scroll-behavior: auto;
+  }
 }
 
 /* RESPONSIVE BREAKPOINTS */
@@ -379,15 +434,28 @@ body {
   .hero-description {
     max-width: 100%;
   }
+  .hero-right {
+    width: 100%;
+  }
+
   .sticker-collage {
-    max-width: 400px;
-    height: 350px;
+    max-width: 480px;
   }
 }
 
 @media(max-width: 600px) {
   .hero-heading {
     font-size: 32px;
+  }
+
+  /* Thinner cut line so small stickers keep their detail */
+  .sticker-img {
+    filter:
+      drop-shadow(2.5px 0 0 #ffffff)
+      drop-shadow(-2.5px 0 0 #ffffff)
+      drop-shadow(0 2.5px 0 #ffffff)
+      drop-shadow(0 -2.5px 0 #ffffff)
+      drop-shadow(0 6px 10px rgba(73, 51, 38, 0.18));
   }
   .categories-grid {
     justify-content: flex-start;

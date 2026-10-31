@@ -88,6 +88,59 @@
             </select>
         </div>
 
+        {% set spec = sticker.spec %}
+        <fieldset class="form-group-set">
+            <legend>Product details <span>(optional)</span></legend>
+            <p class="form-hint">Shown under "About this product" on the sticker page.</p>
+
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label for="material">Material</label>
+                    <input type="text" id="material" name="material" maxlength="120"
+                           placeholder="e.g. Waterproof matte vinyl"
+                           value="{{ spec.material if spec and spec.material else '' }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="dimensions">Size</label>
+                    <input type="text" id="dimensions" name="dimensions" maxlength="60"
+                           placeholder="e.g. 7.5 × 7.5 cm"
+                           value="{{ spec.dimensions if spec and spec.dimensions else '' }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="finish">Finish</label>
+                    <input type="text" id="finish" name="finish" maxlength="60"
+                           placeholder="e.g. Matte, Glossy"
+                           value="{{ spec.finish if spec and spec.finish else '' }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-field photo-picker" data-max="{{ max_photos }}">
+            <label for="photos">Extra photos <span class="label-note">(<span data-photo-count>{{ sticker.photos|length }}</span> of {{ max_photos }})</span></label>
+            <p class="form-hint">Show the same sticker from other angles. Add several at once, or tick Remove to free a slot.</p>
+
+            <div class="extra-photos" data-photo-grid {{ 'hidden' if not sticker.photos }}>
+                {% for photo in sticker.photos %}
+                    <div class="extra-photo">
+                        <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="Extra photo {{ loop.index }}">
+                        <label class="extra-photo-remove">
+                            <input type="checkbox" name="remove_photo" value="{{ photo.id }}"> Remove
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <input type="file" id="photos" name="photos" multiple
+                   accept="image/png,image/jpeg,image/webp" class="photo-input">
+
+            <button type="button" class="photo-add-btn" data-photo-add>
+                <i class="fa-solid fa-plus"></i> <span data-photo-add-label>Add photos</span>
+            </button>
+            <p class="form-hint photo-picker-msg" data-photo-msg role="status"></p>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="artist-btn">
                 Save Changes

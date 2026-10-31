@@ -5,20 +5,20 @@
   max-width: 1300px;
   margin: 0 auto;
   padding: 3rem 1rem;
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  font-family: var(--font-body);
 }
 
 .shop-header {
   margin-bottom: 2rem;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 1rem;
 }
 
 .shop-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text);
   margin: 0 0 0.5rem 0;
 }
 
@@ -29,8 +29,8 @@
 }
 
 .filter-sidebar {
-  background: #141414;
-  border: 1px solid #252525;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 1.5rem;
   height: fit-content;
@@ -42,7 +42,7 @@
 
 .filter-group h4 {
   font-size: 0.95rem;
-  color: #fff;
+  color: var(--text);
   margin: 0 0 0.75rem 0;
 }
 
@@ -51,7 +51,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: #999;
+  color: var(--muted);
   margin-bottom: 0.5rem;
   cursor: pointer;
 }

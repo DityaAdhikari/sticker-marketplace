@@ -63,6 +63,23 @@
             {% endif %}
 
 
+            {% if not is_owner and artist.user_id %}
+
+                <div class="profile-actions">
+                    <form method="POST" action="{{ url_for('toggle_follow', artist_id=artist.id) }}"
+                          class="follow-form" data-artist-id="{{ artist.id }}">
+                        <button type="submit" class="follow-btn {{ 'following' if is_following }}"
+                                data-name="{{ artist.display_name }}"
+                                aria-pressed="{{ 'true' if is_following else 'false' }}"
+                                aria-label="{{ 'Unfollow ' if is_following else 'Follow ' }}{{ artist.display_name }}">
+                            {{ 'Following' if is_following else 'Follow' }}
+                        </button>
+                    </form>
+                </div>
+
+            {% endif %}
+
+
             {% if is_owner %}
 
                 <div class="profile-actions">
@@ -100,6 +117,11 @@
         <div class="stat-card">
             <span class="stat-number">{{ total_likes }}</span>
             <span class="stat-label">Likes</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-number" data-followers-for="{{ artist.id }}">{{ followers_count }}</span>
+            <span class="stat-label">Followers</span>
         </div>
 
     </section>

@@ -5,26 +5,74 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 :root {
-  --color-bg: #0b0b0b;
-  --color-card-bg: #141414;
-  --color-border: #252525;
-  --color-accent: #ff4500;
-  --color-accent-hover: #ff6b35;
-  --color-text: #ffffff;
-  --color-text-muted: #999999;
+  /* Warm, cozy palette */
+  --bg: #F8F4ED;            /* ivory page background */
+  --card: #F1E9DF;          /* beige cards */
+  --surface: #FBF8F3;       /* inputs, image wells (lighter than cards) */
+  --surface-alt: #EAE0D4;   /* hover / pressed beige */
+  --text: #493326;          /* cocoa brown */
+  --muted: #806C5D;         /* muted brown secondary text */
+  --accent: #C98F70;        /* terracotta accents and primary buttons */
+  --accent-hover: #D4A186;  /* lighter terracotta keeps text contrast on hover */
+  --accent-text: #9A5D40;   /* deeper terracotta for readable accent text/links */
+  --on-accent: #493326;     /* text on terracotta (white is too low contrast) */
+  --sage: #A6AD8A;          /* sage highlights */
+  --sage-soft: #E5E8D8;     /* sage tint backgrounds */
+  --sage-text: #5C6446;     /* readable sage text */
+  --border: #E4D8CB;        /* soft beige borders */
+  --border-strong: #D3C2B0;
+  --shadow: 0 6px 20px rgba(73, 51, 38, 0.08);
+
+  --font-body: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+  --font-heading: 'Poppins', 'Segoe UI', Tahoma, sans-serif;
+
+  /* Older names kept for existing rules */
+  --color-bg: var(--bg);
+  --color-card-bg: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-text: var(--text);
+  --color-text-muted: var(--muted);
 }
 
 body {
-  background-color: var(--color-bg);
-  padding: 20px;
-  color: var(--color-text);
+  background-color: var(--bg);
+  padding: 12px 20px 20px;
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--text);
+  line-height: 1.25;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--sage);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
 }
 
 a {
+  color: inherit;
   text-decoration: none;
 }
 
@@ -46,7 +94,7 @@ a {
 
 .btn-primary {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--text);
 }
 
 .btn-primary:hover {
@@ -55,12 +103,13 @@ a {
 
 .btn-secondary {
   background: transparent;
-  color: #fff;
-  border: 1px solid var(--color-border);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-accent);
+  border-color: var(--accent);
+  background: var(--surface);
 }
 
 /* =========================
@@ -78,9 +127,9 @@ a {
     align-items: center;
     gap: 25px;
     padding: 30px;
-    border: 1px solid #292929;
+    border: 1px solid var(--border);
     border-radius: 16px;
-    background: #111;
+    background: var(--card);
 }
 
 .profile-picture {
@@ -94,8 +143,8 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #ff5a00;
-    color: white;
+    background: var(--accent);
+    color: var(--text);
     font-size: 40px;
     font-weight: bold;
 }
@@ -106,24 +155,24 @@ a {
 }
 
 .username {
-    color: #888;
+    color: var(--muted);
     margin: 5px 0;
 }
 
 .bio {
-    color: #ccc;
+    color: var(--muted);
 }
 
 .location {
-    color: #999;
+    color: var(--muted);
 }
 
 .edit-profile-btn {
     display: inline-block;
     margin-top: 10px;
     padding: 10px 18px;
-    background: #ff5a00;
-    color: white;
+    background: var(--accent);
+    color: var(--text);
     border-radius: 8px;
     text-decoration: none;
 }
@@ -142,8 +191,8 @@ a {
 .stat-card {
     padding: 20px;
     text-align: center;
-    background: #111;
-    border: 1px solid #292929;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 12px;
 }
 
@@ -154,7 +203,7 @@ a {
 }
 
 .stat-label {
-    color: #888;
+    color: var(--muted);
     font-size: 14px;
 }
 .profile-actions {
@@ -175,18 +224,18 @@ a {
     display: flex;
     gap: 30px;
     margin-top: 35px;
-    border-bottom: 1px solid #292929;
+    border-bottom: 1px solid var(--border);
 }
 
 .profile-tab {
     padding: 12px 5px;
-    color: #888;
+    color: var(--muted);
     text-decoration: none;
 }
 
 .profile-tab.active {
-    color: white;
-    border-bottom: 2px solid #ff5a00;
+    color: var(--text);
+    border-bottom: 2px solid var(--accent);
 }
 
 
@@ -201,7 +250,7 @@ a {
 }
 
 .section-heading p {
-    color: #777;
+    color: var(--muted);
 }
 
 
@@ -210,26 +259,26 @@ a {
 .empty-profile {
     padding: 60px 20px;
     text-align: center;
-    border: 1px dashed #333;
+    border: 1px dashed var(--border);
     border-radius: 15px;
     margin-top: 20px;
 }
 
 .empty-icon {
     font-size: 35px;
-    color: #ff5a00;
+    color: var(--accent-text);
 }
 
 .empty-profile p {
-    color: #777;
+    color: var(--muted);
 }
 
 .empty-profile a {
     display: inline-block;
     margin-top: 10px;
     padding: 10px 18px;
-    background: #ff5a00;
-    color: white;
+    background: var(--accent);
+    color: var(--text);
     border-radius: 8px;
     text-decoration: none;
 }
@@ -242,8 +291,8 @@ a {
     margin: 40px auto;
     padding: 30px;
 
-    background: #111;
-    border: 1px solid #292929;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 16px;
 }
 
@@ -259,7 +308,7 @@ a {
 
 .edit-profile-card label {
     margin-top: 12px;
-    color: #ddd;
+    color: var(--text);
 }
 
 .edit-profile-card input,
@@ -269,10 +318,10 @@ a {
 
     padding: 12px;
 
-    background: #181818;
-    color: white;
+    background: var(--surface);
+    color: var(--text);
 
-    border: 1px solid #333;
+    border: 1px solid var(--border);
     border-radius: 8px;
 
     font-family: inherit;
@@ -285,15 +334,15 @@ a {
 .edit-profile-card input:focus,
 .edit-profile-card textarea:focus {
     outline: none;
-    border-color: #ff5a00;
+    border-color: var(--accent);
 }
 
 .edit-profile-card button {
     margin-top: 20px;
     padding: 12px 20px;
 
-    background: #ff5a00;
-    color: white;
+    background: var(--accent);
+    color: var(--text);
 
     border: none;
     border-radius: 8px;
@@ -328,9 +377,9 @@ a {
     padding: 25px;
     margin-top: 20px;
 
-    border: 1px solid #333;
+    border: 1px solid var(--border);
     border-radius: 12px;
-    background: #111;
+    background: var(--card);
 }
 
 .artist-request-card h3 {
@@ -339,7 +388,7 @@ a {
 
 .artist-request-card p {
     margin: 5px 0;
-    color: #aaa;
+    color: var(--muted);
 }
 
 .artist-request-actions {
@@ -355,13 +404,13 @@ a {
 }
 
 .artist-request-actions form:first-child button {
-    background: #ff6600;
-    color: white;
+    background: var(--accent);
+    color: var(--text);
 }
 
 .artist-request-actions form:last-child button {
-    background: #333;
-    color: white;
+    background: var(--surface-alt);
+    color: var(--text);
 }
 
 .profile-info {
@@ -386,8 +435,8 @@ a {
 .sticker-card {
     min-width: 0;
     overflow: hidden;
-    background: #141414;
-    border: 1px solid #292929;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 18px;
     transition: border-color 0.2s ease,
                 transform 0.2s ease;
@@ -395,7 +444,7 @@ a {
 
 .sticker-card:hover {
     transform: translateY(-4px);
-    border-color: #444;
+    border-color: var(--border-strong);
 }
 
 /* Image area */
@@ -406,7 +455,7 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1b1b1b;
+    background: var(--surface);
     box-sizing: border-box;
 }
 
@@ -442,7 +491,7 @@ a {
 
 .artist-attribution {
     margin: 0 0 14px;
-    color: #aaa;
+    color: var(--muted);
 }
 
 .rating-block {
@@ -460,7 +509,7 @@ a {
 }
 
 .currency-price {
-    color: #ff4500;
+    color: var(--accent-text);
     font-size: 23px;
     font-weight: 700;
 }
@@ -490,9 +539,9 @@ a {
     margin-top: 14px;
     padding: 9px 14px;
     background: transparent;
-    border: 1px solid #333;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: #ccc;
+    color: var(--muted);
     font: inherit;
     font-size: 13px;
     cursor: pointer;
@@ -500,12 +549,12 @@ a {
 }
 
 .remove-wishlist-btn i {
-    color: #ff5a00;
+    color: var(--accent-text);
 }
 
 .remove-wishlist-btn:hover {
-    border-color: #ff5a00;
-    color: white;
+    border-color: var(--accent);
+    color: var(--text);
 }
 
 /* Shared secondary action button (profile, artist dashboard) */
@@ -518,9 +567,9 @@ a {
     min-height: 42px;
     padding: 10px 18px;
     background: transparent;
-    border: 1px solid #ff5a00;
+    border: 1px solid var(--accent);
     border-radius: 8px;
-    color: #ff5a00;
+    color: var(--accent-text);
     font: inherit;
     font-size: 14px;
     font-weight: 600;
@@ -531,13 +580,13 @@ a {
 }
 
 .artist-btn:hover {
-    background: #ff5a00;
-    color: white;
+    background: var(--accent);
+    color: var(--text);
 }
 
 .artist-btn:disabled {
-    border-color: #444;
-    color: #888;
+    border-color: var(--border-strong);
+    color: var(--muted);
     background: transparent;
     cursor: not-allowed;
 }
@@ -551,4 +600,212 @@ a {
     font-size: 14px;
     font-weight: 600;
     line-height: 1;
+}
+
+/* Shared form field feel */
+::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(201, 143, 112, 0.22);
+}
+
+/* Profile pages on tablets and phones */
+@media (max-width: 700px) {
+    .profile-page {
+        padding: 24px 4px;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding: 24px 18px;
+        text-align: center;
+    }
+
+    .profile-picture {
+        width: 96px;
+        height: 96px;
+    }
+
+    .profile-info h1 {
+        font-size: 26px;
+    }
+
+    .profile-actions {
+        justify-content: center;
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 14px 8px;
+    }
+
+    .profile-tabs {
+        gap: 18px;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 420px) {
+    body {
+        padding: 12px;
+    }
+
+    .profile-actions > a,
+    .profile-actions > form,
+    .profile-actions > form > button,
+    .profile-actions > button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Hidden visually but still read by screen readers */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The hidden attribute always wins over display rules like grid/flex */
+[hidden] {
+  display: none !important;
+}
+
+/* Follow / Following button (cards, artist profile, Following list) */
+.follow-form {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.follow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* About 60% of the original size; text kept readable */
+  min-height: 24px;
+  padding: 4px 13px;
+  /* Outline only: no fill in any state */
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Hover lifts the button with a soft shadow instead of filling it */
+.follow-btn:hover,
+.follow-btn:focus-visible {
+  box-shadow: 0 4px 12px rgba(73, 51, 38, 0.18);
+  transform: translateY(-1px);
+}
+
+.follow-btn:active {
+  box-shadow: 0 2px 6px rgba(73, 51, 38, 0.14);
+  transform: translateY(0);
+}
+
+.follow-btn.following {
+  border-color: var(--sage);
+  color: var(--sage-text);
+}
+
+.follow-btn:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.follow-btn-sm {
+  min-height: 0;
+  padding: 2px 7px;
+  font-size: 10.5px;
+}
+
+/* Profile: Following stat is a link to the list */
+.stat-link {
+  color: inherit;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.stat-link:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.following-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.following-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.following-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.following-link:hover strong {
+  color: var(--accent-text);
+}
+
+.following-avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+.following-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.following-who strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+}
+
+.following-who span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 12px;
 }

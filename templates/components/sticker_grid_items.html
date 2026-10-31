@@ -1,0 +1,6 @@
+{# One batch of product cards; shop.html includes it and the infinite scroll
+   fetches more of it with ?partial=1 #}
+{% from "components/product_card.html" import product_card %}
+{% for sticker in stickers %}
+  {{ product_card(sticker, like_counts.get(sticker.id, 0), sticker.id in liked_ids) }}
+{% endfor %}

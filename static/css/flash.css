@@ -5,9 +5,9 @@
 }
 
 .flash-message {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: var(--sage-soft);
+    color: var(--sage-text);
+    border: 1px solid var(--sage);
     padding: 12px 18px;
     border-radius: 8px;
     font-weight: 500;

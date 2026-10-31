@@ -1,72 +1,79 @@
 {% extends 'base.html' %}
 
-{% block title %}Shop - StickerNest{% endblock %}
+{% block title %}{{ title }} - StickerNest{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
 {% endblock %}
 
 {% block content %}
-<main class="page-wrapper">
-  <section class="featured-section">
-    <div class="section-header">
-      <h2 class="section-title">All Stickers</h2>
-    </div>
+<main class="page-wrapper shop-layout">
 
-    <div class="stickers-grid">
-      {% for sticker in stickers %}
-      <div class="sticker-card" data-id="{{ sticker.id }}">
-        <div class="card-image-wrapper">
-         
-
-
-<form method="POST"
-      action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}"
-      class="wishlist-form">
-    <button type="submit"
-            class="wishlist-toggle-btn"
-            aria-label="Toggle wishlist">
-        <i class="fa-regular fa-heart"></i>
-    </button>
-</form>
-
-          <div class="feature_product">
-           <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
-           <img
-            src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
-            alt="{{ sticker.name }}"
-            class="product-img"
-            >
-           </a>
-          </div>
-        </div>
-        <div class="card-meta">
-          <h3 class="product-name">
-           <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
-            {{ sticker.name }}
+  <!-- Category list: sticks to the left while you scroll -->
+  <aside class="shop-sidebar" aria-labelledby="shop-cats-title">
+    <h2 class="shop-sidebar-title" id="shop-cats-title">Categories</h2>
+    <nav>
+      <ul class="shop-cats">
+        <li>
+          <a href="{{ url_for('shop') }}"
+             class="shop-cat {{ 'active' if not active_category and not search }}"
+             {{ 'aria-current="page"' if not active_category and not search }}>
+            <span class="shop-cat-thumb"><i class="fa-solid fa-border-all"></i></span>
+            <span class="shop-cat-name">All Stickers</span>
+            <span class="shop-cat-count">{{ all_count }}</span>
+          </a>
+        </li>
+        {% for item in categories %}
+          {% set category = item.category %}
+          {% set active = active_category == category.name %}
+          <li>
+            <a href="{{ url_for('shop', category=category.name) }}"
+               class="shop-cat {{ 'active' if active }}" {{ 'aria-current="page"' if active }}>
+              <span class="shop-cat-thumb">
+                {% if item.image %}
+                  <img src="{{ url_for('static', filename='images/category/thumbs/' + item.image) }}"
+                       alt="" loading="lazy" width="36" height="36">
+                {% else %}
+                  <i class="{{ category.icon or 'fa-solid fa-tag' }}"></i>
+                {% endif %}
+              </span>
+              <span class="shop-cat-name">{{ category.name }}</span>
+              <span class="shop-cat-count">{{ item.count }}</span>
             </a>
-          </h3>
-            <p class="artist-attribution">
-    
-              <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}" class="artist-name">
-                {{ sticker.artist.handle }}
-              </a>
-            </p>
-          <div class="rating-block">
-            <i class="fa-solid fa-star"></i>
-            <span class="rating-value">{{ sticker.rating }}</span>
-            <span class="review-count">({{ sticker.review_count }})</span>
-          </div>
-          <div class="card-action-row">
-            <span class="currency-price">Rs. {{ sticker.price | int }}</span>
-            <button class="primary-add-btn"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
-          </div>
-        </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </aside>
+
+  <section class="shop-main featured-section">
+    <div class="section-header">
+      <div>
+        <h1 class="section-title">{{ title }}</h1>
+        <p class="shop-total">{{ total }} {{ 'sticker' if total == 1 else 'stickers' }}</p>
       </div>
-      {% else %}
-      <p>No stickers found.</p>
-      {% endfor %}
     </div>
+
+    {% if stickers %}
+      <div class="stickers-grid shop-grid" id="shop-grid" data-next-page="{{ next_url or '' }}">
+        {% include "components/sticker_grid_items.html" %}
+      </div>
+
+      {% if next_url %}
+        <div class="shop-loader" id="shop-loader">
+          <span class="shop-spinner" aria-hidden="true"></span>
+          <span class="shop-loader-text">Loading more stickers…</span>
+          <a href="{{ next_url }}" class="shop-load-more">Load more stickers</a>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="empty-profile">
+        <div class="empty-icon">✦</div>
+        <h3>No stickers here yet</h3>
+        <p>{{ 'Try a different search.' if search else 'Check back soon, or explore another category.' }}</p>
+        <a href="{{ url_for('shop') }}">See all stickers</a>
+      </div>
+    {% endif %}
   </section>
 </main>
 {% endblock %}

@@ -104,7 +104,98 @@ class Sticker(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=False)
 
-    
+
+# Extra details live in their own tables so the existing `sticker` table
+# doesn't need altering; db.create_all() adds these on startup.
+
+class StickerPhoto(db.Model):
+    """Extra photos of a sticker from other angles (up to 4)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    sticker_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sticker.id"),
+        nullable=False,
+        index=True
+    )
+
+    filename = db.Column(db.String(255), nullable=False)
+
+    position = db.Column(db.Integer, nullable=False, default=0)
+
+    sticker = db.relationship(
+        "Sticker",
+        backref=db.backref(
+            "photos",
+            order_by="StickerPhoto.position",
+            cascade="all, delete-orphan"
+        )
+    )
+
+
+class StickerSpec(db.Model):
+    """Optional product details shown under "About this product"."""
+
+    sticker_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sticker.id"),
+        primary_key=True
+    )
+
+    material = db.Column(db.String(120), nullable=True)
+
+    dimensions = db.Column(db.String(60), nullable=True)
+
+    finish = db.Column(db.String(60), nullable=True)
+
+    sticker = db.relationship(
+        "Sticker",
+        backref=db.backref(
+            "spec",
+            uselist=False,
+            cascade="all, delete-orphan"
+        )
+    )
+
+
+class Follow(db.Model):
+    """A user following an artist."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False,
+        index=True
+    )
+
+    artist_id = db.Column(
+        db.Integer,
+        db.ForeignKey("artist.id"),
+        nullable=False,
+        index=True
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id",
+            "artist_id",
+            name="unique_user_follow_artist"
+        ),
+    )
+
+    user = db.relationship("User", backref="follows")
+    artist = db.relationship("Artist", backref="followers")
+
+
 class Wishlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 

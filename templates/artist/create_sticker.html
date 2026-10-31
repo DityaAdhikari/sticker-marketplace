@@ -100,6 +100,49 @@
             </select>
         </div>
 
+        <fieldset class="form-group-set">
+            <legend>Product details <span>(optional)</span></legend>
+            <p class="form-hint">Shown under "About this product" on the sticker page.</p>
+
+            <div class="form-field-row">
+                <div class="form-field">
+                    <label for="material">Material</label>
+                    <input type="text" id="material" name="material" maxlength="120"
+                           placeholder="e.g. Waterproof matte vinyl"
+                           value="{{ form.get('material', '') }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="dimensions">Size</label>
+                    <input type="text" id="dimensions" name="dimensions" maxlength="60"
+                           placeholder="e.g. 7.5 × 7.5 cm"
+                           value="{{ form.get('dimensions', '') }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="finish">Finish</label>
+                    <input type="text" id="finish" name="finish" maxlength="60"
+                           placeholder="e.g. Matte, Glossy"
+                           value="{{ form.get('finish', '') }}">
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-field photo-picker" data-max="{{ max_photos }}">
+            <label for="photos">Extra photos <span class="label-note">(optional, <span data-photo-count>0</span> of {{ max_photos }})</span></label>
+            <p class="form-hint">Show the same sticker from other angles. Pick several at once, or keep adding until you save.</p>
+
+            <div class="extra-photos" data-photo-grid hidden></div>
+
+            <input type="file" id="photos" name="photos" multiple
+                   accept="image/png,image/jpeg,image/webp" class="photo-input">
+
+            <button type="button" class="photo-add-btn" data-photo-add>
+                <i class="fa-solid fa-plus"></i> <span data-photo-add-label>Add photos</span>
+            </button>
+            <p class="form-hint photo-picker-msg" data-photo-msg role="status"></p>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="artist-btn">
                 Publish Sticker

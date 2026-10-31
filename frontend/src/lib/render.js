@@ -269,7 +269,7 @@ export function drawPage(
   // Page-safe-area guide; it is not part of the export.
   if (guides) {
     ctx.save()
-    ctx.strokeStyle = '#e4ded8'
+    ctx.strokeStyle = '#E4D8CB'
     ctx.lineWidth = scale
     ctx.setLineDash([4 * scale, 4 * scale])
     ctx.strokeRect(18 * scale, 18 * scale, (PAGE.width - 36) * scale, (PAGE.height - 36) * scale)
@@ -308,7 +308,7 @@ export function drawPage(
         (sticker.y + sticker.height / 2) * scale,
       )
       ctx.rotate((sticker.rotation * Math.PI) / 180)
-      ctx.strokeStyle = '#ff4b0b'
+      ctx.strokeStyle = '#9A5D40'
       ctx.lineWidth = 1.5 * scale
       ctx.setLineDash([4 * scale, 3 * scale])
       ctx.strokeRect(-w / 2, -h / 2, w, h)

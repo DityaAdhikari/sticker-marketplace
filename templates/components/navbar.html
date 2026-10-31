@@ -1,34 +1,32 @@
 <section class="header">
   <header class="navbar">
-    <!-- Logo -->
-    <div class="nav-logo">
-      <div class="logo-text">
-        Sticker<span>Nest</span> 
+    <!-- Logo (links home) -->
+    <a href="{{ url_for('home') }}" class="nav-logo" aria-label="StickerNest home">
+      <span class="logo-text">
+        Sticker<span>Nest</span>
         <i class="fa-solid fa-hand-holding-heart logo-icon"></i>
-      </div>
-      <div class="logo-subtext">Stickers from the street of KTM artist</div>
-    </div>
+      </span>
+    </a>
 
     <!-- Search Bar -->
-    <form class="nav-search" action="{{ url_for('search') }}" method="GET">
+    <form class="nav-search" action="{{ url_for('search') }}" method="GET" role="search">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" name="q" placeholder="Search stickers, artists, categories...">
+      <input type="text" name="q" placeholder="Search stickers, artists..." aria-label="Search stickers">
     </form>
 
     <!-- Navigation Links -->
-    <nav class="nav-links">
-      <a href="{{ url_for('home') }}" class="nav-item {{ 'active' if request.endpoint == 'home' }}">Home</a>
-      
-      <!-- Shop Link (Only active when endpoint is shop AND no category parameter is selected) -->
-      <a href="{{ url_for('shop') }}" class="nav-item {{ 'active' if request.endpoint == 'shop' and not request.args.get('category') }}">Shop</a>
-      
-      <!-- Categories Dropdown (Active when a category URL parameter exists) -->
-      <div class="nav-item dropdown {{ 'active' if request.args.get('category') }}">
+    <nav class="nav-links" id="nav-links-container">
+      <!-- Categories Dropdown (active on the shop pages) -->
+      <div class="nav-item dropdown {{ 'active' if request.endpoint in ('shop', 'search') }}">
         <span>Categories <i class="fa-solid fa-chevron-down dropdown-arrow"></i></span>
         <div class="dropdown-menu">
           <div class="dropdown-menu-inner">
+            <a href="{{ url_for('shop') }}"
+               class="{{ 'active' if request.endpoint == 'shop' and not request.args.get('category') }}">
+              All Stickers
+            </a>
             {% for category in nav_categories %}
-            <a href="{{ url_for('shop', category=category.name) }}" 
+            <a href="{{ url_for('shop', category=category.name) }}"
                class="{{ 'active' if request.args.get('category') == category.name }}">
               {{ category.name }}
             </a>
@@ -37,58 +35,92 @@
         </div>
       </div>
 
-      <a href="{{ url_for('artists') }}"
-   class="nav-item {{ 'active' if request.endpoint == 'artists' }}">
-    Artists
-</a>
+      <a href="{{ url_for('studio_api.studio') }}"
+         class="nav-item {{ 'active' if request.endpoint == 'studio_api.studio' }}">
+        Studio
+      </a>
 
-<a href="{{ url_for('studio_api.studio') }}"
-   class="nav-item {{ 'active' if request.endpoint == 'studio_api.studio' }}">
-    Studio
-</a>
+      <a href="{{ url_for('about') }}"
+         class="nav-item {{ 'active' if request.endpoint == 'about' }}">
+        About
+      </a>
 
-<a href="{{ url_for('about') }}"
-   class="nav-item {{ 'active' if request.endpoint == 'about' }}">
-    About
-</a>
-
-<a href="{{ url_for('contact') }}"
-   class="nav-item {{ 'active' if request.endpoint == 'contact' }}">
-    Contact
-</a>
-
-<a href="{{ url_for('profile') }}"
-   class="nav-item {{ 'active' if request.endpoint == 'profile' }}">
-    Profile
-</a>
+      <a href="{{ url_for('contact') }}"
+         class="nav-item {{ 'active' if request.endpoint == 'contact' }}">
+        Contact
+      </a>
     </nav>
 
-    <div class="nav-divider"></div>
-
-    <!-- Action Buttons -->
+    <!-- Account: one control for profile, greeting and login/logout -->
     <div class="nav-actions">
-  
-        {% if session.get("user_id") %}
 
-    <span class="action-label">Hi, {{ session.get("user_name") }}</span>
+      {% if nav_user %}
 
-    <a href="{{ url_for('logout') }}" class="action-item">
-        <i class="fa-solid fa-right-from-bracket"></i>
-        <span class="action-label">Logout</span>
-    </a>
+        <div class="account-menu">
+          <button type="button" class="account-toggle" id="account-toggle"
+                  aria-haspopup="true" aria-expanded="false" aria-controls="account-dropdown">
+            {% if nav_user.profile_image %}
+              <img src="{{ url_for('static', filename='uploads/' + nav_user.profile_image) }}" alt="" class="account-avatar"
+                   data-initial="{{ nav_user.name[0]|upper }}">
+            {% else %}
+              <span class="account-avatar">{{ nav_user.name[0]|upper }}</span>
+            {% endif %}
+            <span class="account-name">Hi, {{ nav_user.name.split(' ')[0] }}</span>
+            <i class="fa-solid fa-chevron-down account-arrow"></i>
+          </button>
 
-{% else %}
+          <div class="account-dropdown" id="account-dropdown" hidden>
+            <div class="account-dropdown-head">
+              {% if nav_user.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/' + nav_user.profile_image) }}" alt=""
+                     class="account-avatar account-avatar-lg" data-initial="{{ nav_user.name[0]|upper }}">
+              {% else %}
+                <span class="account-avatar account-avatar-lg">{{ nav_user.name[0]|upper }}</span>
+              {% endif %}
+              <div class="account-dropdown-who">
+                <strong>{{ nav_user.name }}</strong>
+                <span>{{ {'artist': 'Artist', 'admin': 'Admin'}.get(nav_user.role, 'Member') }}</span>
+              </div>
+            </div>
 
-    <a href="{{ url_for('login') }}" class="action-item">
-        <i class="fa-regular fa-user"></i>
-        <span class="action-label">Login</span>
-    </a>
+            <a href="{{ url_for('profile') }}"
+               class="{{ 'active' if request.endpoint == 'profile' }}">
+              <i class="fa-regular fa-user"></i> My Profile
+            </a>
 
-{% endif %}
+            {% if nav_user.role == "artist" %}
+              <a href="{{ url_for('artist_dashboard') }}"
+                 class="{{ 'active' if request.endpoint == 'artist_dashboard' }}">
+                <i class="fa-solid fa-palette"></i> Artist Dashboard
+              </a>
+            {% endif %}
 
-      <div class="mobile-menu-toggle" id="mobile-toggle">
+            {% if nav_user.role == "admin" %}
+              <a href="{{ url_for('artist_requests') }}"
+                 class="{{ 'active' if request.endpoint == 'artist_requests' }}">
+                <i class="fa-solid fa-user-check"></i> Artist Requests
+              </a>
+            {% endif %}
+
+            <a href="{{ url_for('logout') }}" class="account-logout">
+              <i class="fa-solid fa-right-from-bracket"></i> Log out
+            </a>
+          </div>
+        </div>
+
+      {% else %}
+
+        <a href="{{ url_for('login') }}" class="login-btn">
+          <i class="fa-regular fa-user"></i>
+          <span>Login</span>
+        </a>
+
+      {% endif %}
+
+      <button type="button" class="mobile-menu-toggle" id="mobile-toggle"
+              aria-label="Open menu" aria-controls="nav-links-container" aria-expanded="false">
         <i class="fa-solid fa-bars"></i>
-      </div>
+      </button>
     </div>
   </header>
 </section>

@@ -13,8 +13,8 @@
 }
 
 .artist-card {
-    background: #141414;
-    border: 1px solid #252525;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 18px;
     padding: 2rem 1.5rem;
 
@@ -29,8 +29,8 @@
 
 .artist-card:hover {
     transform: translateY(-6px);
-    border-color: #ff4500;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, .45);
+    border-color: var(--accent);
+    box-shadow: 0 20px 40px rgba(73, 51, 38, 0.14);
 }
 
 
@@ -45,15 +45,15 @@
     height: 100px;
 
     border-radius: 50%;
-    border: 3px solid #ff4500;
+    border: 3px solid var(--accent);
 
     margin-bottom: 1.25rem;
 
-    background: #222;
+    background: var(--surface);
 
     font-size: 2.5rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--text);
 
     flex-shrink: 0;
 }
@@ -65,14 +65,14 @@
 .artist-name {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--text);
 
     margin: 0 0 .35rem;
 }
 
 .artist-bio {
     font-size: .85rem;
-    color: #999;
+    color: var(--muted);
 
     margin: 0 0 1rem;
 
@@ -87,14 +87,14 @@
     margin-bottom: 1.25rem;
 
     font-size: .85rem;
-    color: #bdbdbd;
+    color: var(--muted);
 }
 
 .view-profile-btn {
     display: inline-block;
 
-    background: #ff4500;
-    color: #fff;
+    background: var(--accent);
+    color: var(--text);
 
     text-decoration: none;
 
@@ -109,7 +109,7 @@
 }
 
 .view-profile-btn:hover {
-    background: #ff6b35;
+    background: var(--accent-hover);
 }
 
 
@@ -123,12 +123,12 @@
 .back-link {
     display: inline-block;
     margin-bottom: 24px;
-    color: #aaa;
+    color: var(--muted);
     text-decoration: none;
 }
 
 .back-link:hover {
-    color: #ff642e;
+    color: var(--accent-text);
 }
 
 .artist-form-header {
@@ -142,14 +142,14 @@
 
 .artist-form-header p {
     margin: 0;
-    color: #999;
+    color: var(--muted);
     line-height: 1.6;
 }
 
 .artist-sticker-form {
     padding: 30px;
-    background: #141414;
-    border: 1px solid #303030;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 16px;
 }
 
@@ -162,7 +162,7 @@
     margin-bottom: 9px;
     font-size: 15px;
     font-weight: 600;
-    color: #eee;
+    color: var(--text);
 }
 
 .artist-sticker-form input:not([type="file"]),
@@ -172,9 +172,9 @@
     width: 100%;
     box-sizing: border-box;
     padding: 13px 14px;
-    background: #202020;
-    color: #fff;
-    border: 1px solid #3a3a3a;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
     border-radius: 9px;
     font: inherit;
 }
@@ -188,8 +188,8 @@
 .artist-sticker-form textarea:focus,
 .artist-sticker-form select:focus {
     outline: none;
-    border-color: #ff5722;
-    box-shadow: 0 0 0 3px rgb(255 87 34 / 12%);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201, 143, 112, 0.19);
 }
 
 .artist-sticker-form input[type="file"] {
@@ -197,9 +197,9 @@
     width: 100%;
     box-sizing: border-box;
     padding: 12px;
-    background: #202020;
-    color: #ccc;
-    border: 1px dashed #494949;
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px dashed var(--border-strong);
     border-radius: 9px;
 }
 
@@ -213,14 +213,14 @@
     height: 150px;
     object-fit: contain;
     padding: 10px;
-    background: #202020;
-    border: 1px solid #333;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
 }
 
 .current-sticker-image p {
     margin: 8px 0 0;
-    color: #999;
+    color: var(--muted);
     font-size: 13px;
 }
 
@@ -248,23 +248,23 @@
 }
 
 .form-actions .artist-btn {
-    border: 1px solid #ff5722;
-    background: #ff5722;
-    color: #fff;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--text);
 }
 
 .form-actions .artist-btn:hover {
-    background: #ff7043;
+    background: var(--accent-hover);
 }
 
 .form-actions .cancel-btn {
-    border: 1px solid #444;
-    background: #222;
-    color: #ddd;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
 }
 
 .form-actions .cancel-btn:hover {
-    background: #303030;
+    background: var(--surface-alt);
 }
 
 @media (max-width: 600px) {
@@ -295,8 +295,8 @@
     flex-direction: column;
     min-width: 0;
     overflow: hidden;
-    background: #141414;
-    border: 1px solid #252525;
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 14px;
 }
 
@@ -309,7 +309,7 @@
     object-position: center;
     box-sizing: border-box;
     padding: 12px;
-    background: #1a1a1a;
+    background: var(--surface);
 }
 
 .artist-dashboard .sticker-card > h3,
@@ -357,7 +357,7 @@
 
 .artist-dashboard-header p {
     margin: 0;
-    color: #999;
+    color: var(--muted);
 }
 
 .dashboard-actions {
@@ -367,13 +367,13 @@
 }
 
 .artist-btn.primary {
-    background: #ff5a00;
-    color: #fff;
+    background: var(--accent);
+    color: var(--text);
 }
 
 .artist-btn.primary:hover {
-    background: #ff7043;
-    border-color: #ff7043;
+    background: var(--accent-hover);
+    border-color: var(--accent);
 }
 
 .dashboard-section-title {
@@ -384,11 +384,11 @@
     display: flex;
     justify-content: space-between;
     margin-top: 0;
-    color: #ccc;
+    color: var(--muted);
 }
 
 .artist-dashboard .sticker-meta i {
-    color: #ff5a00;
+    color: var(--accent-text);
 }
 
 .artist-dashboard .sticker-actions {
@@ -408,10 +408,10 @@
 .delete-btn {
     width: 100%;
     min-height: 42px;
-    border: 1px solid #444;
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
-    background: #222;
-    color: #fff;
+    background: var(--surface);
+    color: var(--text);
     font: inherit;
     font-size: 14px;
     font-weight: 600;
@@ -420,7 +420,7 @@
 }
 
 .delete-btn:hover {
-    background: #333;
+    background: var(--surface-alt);
 }
 
 @media (max-width: 600px) {
@@ -442,6 +442,191 @@
 
 .artist-handle-small {
     margin: 0 0 8px;
-    color: #888;
+    color: var(--muted);
     font-size: 13px;
+}
+
+.artist-dashboard .sticker-card > h3 {
+    margin-top: 14px;
+}
+
+/* Sticker form: optional product details and extra photos */
+.form-group-set {
+    margin: 0 0 23px;
+    padding: 18px 18px 4px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.form-group-set legend {
+    padding: 0 6px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.form-group-set legend span,
+.label-note {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 13px;
+}
+
+.form-hint {
+    margin: -4px 0 12px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.form-field-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.extra-photos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.extra-photo {
+    position: relative;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.extra-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
+
+.extra-photo.pending {
+    border-style: dashed;
+    border-color: var(--sage);
+}
+
+.extra-photo-tag {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--sage-soft);
+    color: var(--sage-text);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Small pill instead of the form's large label style */
+.artist-sticker-form .extra-photo-remove {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 3px 9px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.artist-sticker-form .extra-photo-remove input {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.extra-photo:has(.extra-photo-remove input:checked) img {
+    opacity: 0.35;
+}
+
+.artist-sticker-form .extra-photo:has(.extra-photo-remove input:checked) .extra-photo-remove {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+
+.extra-photo-x {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.extra-photo-x:hover {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+
+/* Native input stays for the form submit; the button opens it */
+.photo-picker .photo-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.photo-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.photo-add-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+}
+
+.photo-add-btn:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.photo-picker-msg {
+    margin: 8px 0 0;
+}
+
+.photo-picker-msg:empty {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .form-field-row {
+        grid-template-columns: 1fr;
+    }
+
+    .extra-photos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }

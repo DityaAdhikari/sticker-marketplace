@@ -1,0 +1,56 @@
+{# Product card shared by the home page and the shop/search pages.
+   Usage: {% from "components/product_card.html" import product_card %}
+          {{ product_card(sticker, like_count, liked) }} #}
+{% macro product_card(sticker, like_count, liked, show_artist=False, following=False, own=False) %}
+<article class="sticker-card product-card" data-id="{{ sticker.id }}">
+
+  {# Image link is skipped by keyboard and screen readers; the name link below covers it #}
+  <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}" class="pc-media" tabindex="-1" aria-hidden="true">
+    <img src="{{ url_for('static', filename='uploads/' + sticker.image) }}" alt=""
+         class="lazy-img" loading="lazy" decoding="async">
+  </a>
+
+  <div class="pc-body">
+    <div class="pc-title-row">
+      <h3 class="product-name">
+        <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">{{ sticker.name }}</a>
+      </h3>
+
+      <form method="POST" action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}" class="pc-like-form" data-sticker-id="{{ sticker.id }}">
+        <button type="submit" class="pc-like-btn {{ 'liked' if liked }}"
+                data-name="{{ sticker.name }}"
+                title="{{ 'Remove from wishlist' if liked else 'Add to wishlist' }}"
+                aria-pressed="{{ 'true' if liked else 'false' }}"
+                aria-label="{{ 'Remove ' ~ sticker.name ~ ' from wishlist' if liked else 'Add ' ~ sticker.name ~ ' to wishlist' }} ({{ like_count }} {{ 'like' if like_count == 1 else 'likes' }})">
+          <i class="{{ 'fa-solid' if liked else 'fa-regular' }} fa-heart"></i>
+          <span>{{ like_count }}</span>
+        </button>
+      </form>
+    </div>
+
+    <p class="pc-price">Rs. {{ sticker.price | int }}</p>
+
+    {% if show_artist %}
+      {% set artist_label = sticker.artist.handle or sticker.artist.display_name %}
+      <div class="pc-artist-row">
+        <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}" class="pc-artist">{{ artist_label }}</a>
+        {% if not own %}
+          <form method="POST" action="{{ url_for('toggle_follow', artist_id=sticker.artist.id) }}"
+                class="follow-form" data-artist-id="{{ sticker.artist.id }}">
+            <button type="submit" class="follow-btn follow-btn-sm {{ 'following' if following }}"
+                    data-name="{{ artist_label }}"
+                    aria-pressed="{{ 'true' if following else 'false' }}"
+                    aria-label="{{ 'Unfollow ' if following else 'Follow ' }}{{ artist_label }}">
+              {{ 'Following' if following else 'Follow' }}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}" class="pc-buy">
+      Buy Now
+    </a>
+  </div>
+</article>
+{% endmacro %}

@@ -1,5 +1,5 @@
-
 {% extends "base.html" %}
+{% from "components/product_card.html" import product_card %}
 
 {% block title %}{{ sticker.name }} - StickerNest{% endblock %}
 
@@ -8,50 +8,150 @@
 {% endblock %}
 
 {% block content %}
-<main class="page-wrapper">
-    <section class="sticker-detail">
+{% set like_count = like_counts.get(sticker.id, 0) %}
+{% set liked = sticker.id in liked_ids %}
+{% set spec = sticker.spec %}
+{% set gallery_urls = [] %}
+{% for image in gallery %}{% set _ = gallery_urls.append(url_for('static', filename='uploads/' + image)) %}{% endfor %}
 
-        <div class="sticker-detail-image">
-            <img
-                src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
-                alt="{{ sticker.name }}"
-            >
-        </div>
+<main class="page-wrapper product-page">
 
-        <div class="sticker-detail-info">
-            <p class="artist-attribution">
-                By
-                <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}">
-                    {{ sticker.artist.handle }}
-                </a>
-            </p>
+    <nav class="pd-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ url_for('shop') }}">Shop</a>
+        <span aria-hidden="true">/</span>
+        <a href="{{ url_for('shop', category=sticker.category.name) }}">{{ sticker.category.name }}</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{{ sticker.name }}</span>
+    </nav>
 
-            <h1>{{ sticker.name }}</h1>
+    <section class="pd">
 
-            <p class="sticker-detail-price">
-                Rs. {{ sticker.price | int }}
-            </p>
-
-            {% if sticker.description %}
-                <p class="sticker-detail-description">
-                    {{ sticker.description }}
-                </p>
-            {% else %}
-                <p class="sticker-detail-description">
-                    No description available yet.
-                </p>
-            {% endif %}
-
-            <p class="sticker-detail-rating">
-                ★ {{ sticker.rating }} ({{ sticker.review_count }} reviews)
-            </p>
-
-            <button type="button" class="primary-add-btn" disabled>
-                Add to Cart — Coming Soon
+        <!-- Gallery: main image opens a full view; thumbnails only when the artist added other angles -->
+        <div class="pd-gallery">
+            <button type="button" class="pd-main" id="pd-main" aria-label="View {{ sticker.name }} full size">
+                <img id="pd-main-img"
+                     src="{{ url_for('static', filename='uploads/' + gallery[0]) }}"
+                     alt="{{ sticker.name }}">
+                <span class="pd-zoom-hint"><i class="fa-solid fa-expand"></i> Click to view full</span>
             </button>
+
+            {% if gallery|length > 1 %}
+                <div class="pd-thumbs" aria-label="More photos">
+                    {% for image in gallery %}
+                        <button type="button" class="pd-thumb {{ 'active' if loop.first }}"
+                                data-index="{{ loop.index0 }}"
+                                data-src="{{ url_for('static', filename='uploads/' + image) }}"
+                                aria-label="Show photo {{ loop.index }} of {{ gallery|length }}"
+                                aria-pressed="{{ 'true' if loop.first else 'false' }}">
+                            <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="" loading="lazy">
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
 
+        <div class="pd-info">
+            <h1 class="pd-title">{{ sticker.name }}</h1>
+
+            <p class="pd-artist">by
+                <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}">{{ sticker.artist.handle or sticker.artist.display_name }}</a>
+            </p>
+
+            <div class="pd-price-row">
+                <p class="pd-price">Rs. {{ sticker.price | int }}</p>
+
+                <form method="POST" action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}"
+                      class="pc-like-form" data-sticker-id="{{ sticker.id }}">
+                    <button type="submit" class="pc-like-btn {{ 'liked' if liked }}"
+                            data-name="{{ sticker.name }}"
+                            title="{{ 'Remove from wishlist' if liked else 'Add to wishlist' }}"
+                            aria-pressed="{{ 'true' if liked else 'false' }}"
+                            aria-label="{{ 'Remove ' ~ sticker.name ~ ' from wishlist' if liked else 'Add ' ~ sticker.name ~ ' to wishlist' }} ({{ like_count }} {{ 'like' if like_count == 1 else 'likes' }})">
+                        <i class="{{ 'fa-solid' if liked else 'fa-regular' }} fa-heart"></i>
+                        <span>{{ like_count }}</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="pd-block">
+                <h2>Description</h2>
+                <p class="pd-description">{{ sticker.description or "The artist hasn't added a description yet." }}</p>
+            </div>
+
+            <div class="pd-block">
+                <h2>About this product</h2>
+                <dl class="pd-specs">
+                    {% if spec and spec.material %}
+                        <div><dt>Material</dt><dd>{{ spec.material }}</dd></div>
+                    {% endif %}
+                    {% if spec and spec.dimensions %}
+                        <div><dt>Size</dt><dd>{{ spec.dimensions }}</dd></div>
+                    {% endif %}
+                    {% if spec and spec.finish %}
+                        <div><dt>Finish</dt><dd>{{ spec.finish }}</dd></div>
+                    {% endif %}
+                    <div>
+                        <dt>Category</dt>
+                        <dd><a href="{{ url_for('shop', category=sticker.category.name) }}">{{ sticker.category.name }}</a></dd>
+                    </div>
+                    <div>
+                        <dt>Artist</dt>
+                        <dd><a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}">{{ sticker.artist.display_name }}</a></dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Purchase actions on one line; cart and checkout aren't built yet -->
+            <div class="pd-actions">
+                <button type="button" class="pd-btn pd-btn-cart" data-checkout-soon>
+                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                </button>
+                <button type="button" class="pd-btn pd-btn-buy" data-checkout-soon>
+                    Buy Now
+                </button>
+            </div>
+            <p class="pd-checkout-note" id="pd-checkout-note" role="status" hidden>
+                Cart and checkout are coming soon. Tap the heart to save this sticker to your wishlist for now.
+            </p>
+        </div>
     </section>
+
+    {% if similar %}
+        <section class="featured-section pd-similar">
+            <div class="section-header">
+                <h2 class="section-title">You may also like</h2>
+                <a href="{{ url_for('shop', category=sticker.category.name) }}" class="view-all-link">
+                    More {{ sticker.category.name }} <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="stickers-grid featured-grid">
+                {% for item in similar %}
+                    {{ product_card(item, like_counts.get(item.id, 0), item.id in liked_ids) }}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Full-size viewer -->
+    <dialog class="pd-lightbox" id="pd-lightbox" aria-label="{{ sticker.name }} full size"
+            data-gallery='{{ gallery_urls | tojson }}'>
+        <button type="button" class="pd-lightbox-close" data-lightbox-close aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        {% if gallery|length > 1 %}
+            <button type="button" class="pd-lightbox-nav prev" data-lightbox-step="-1" aria-label="Previous photo">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="pd-lightbox-nav next" data-lightbox-step="1" aria-label="Next photo">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        {% endif %}
+        <img id="pd-lightbox-img" src="{{ url_for('static', filename='uploads/' + gallery[0]) }}" alt="{{ sticker.name }}">
+        {% if gallery|length > 1 %}
+            <p class="pd-lightbox-count" id="pd-lightbox-count">1 / {{ gallery|length }}</p>
+        {% endif %}
+    </dialog>
+
 </main>
 {% endblock %}
-

@@ -5,13 +5,13 @@
   max-width: 480px;
   margin: 0 auto;
   padding: 4rem 1rem;
-  color: #ffffff;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  font-family: var(--font-body);
 }
 
 .auth-card {
-  background: #141414;
-  border: 1px solid #252525;
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 2.5rem;
 }
@@ -19,14 +19,14 @@
 .auth-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text);
   margin: 0 0 0.5rem 0;
   text-align: center;
 }
 
 .auth-subtitle {
   font-size: 0.9rem;
-  color: #888;
+  color: var(--muted);
   text-align: center;
   margin: 0 0 2rem 0;
 }
@@ -38,30 +38,30 @@
 .form-group label {
   display: block;
   font-size: 0.85rem;
-  color: #bdbdbd;
+  color: var(--muted);
   margin-bottom: 0.5rem;
 }
 
 .form-group input {
   width: 100%;
-  background: #1b1b1b;
-  border: 1px solid #252525;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  color: #fff;
+  color: var(--text);
   font-size: 0.95rem;
   transition: .3s ease;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #ff4500;
+  border-color: var(--accent);
 }
 
 .auth-submit-btn {
   width: 100%;
-  background: #ff4500;
-  color: #fff;
+  background: var(--accent);
+  color: var(--text);
   border: none;
   border-radius: 10px;
   padding: 0.85rem;
@@ -73,22 +73,22 @@
 }
 
 .auth-submit-btn:hover {
-  background: #ff6b35;
+  background: var(--accent-hover);
 }
 
 .auth-footer-link {
   text-align: center;
   font-size: 0.85rem;
-  color: #888;
+  color: var(--muted);
   margin-top: 1.5rem;
 }
 
 .auth-footer-link a {
-  color: #ff4500;
+  color: var(--accent-text);
   text-decoration: none;
   font-weight: 600;
 }
 
 .auth-footer-link a:hover {
-  color: #ff6b35;
+  color: var(--accent-text);
 }

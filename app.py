@@ -4,9 +4,9 @@ from werkzeug import Response
 from werkzeug.utils import secure_filename
 import os
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase
-from studio_api import studio_api, studio_asset_exists, claim_studio_asset
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response
+from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase, StickerPhoto, StickerSpec, Follow
+from studio_api import studio_api, studio_asset_exists, claim_studio_asset, save_upload, remove_upload
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
@@ -68,9 +68,177 @@ with app.app_context():
     db.create_all()
 
 
+# Home page "Featured Stickers": two full rows of five.
+FEATURED_LIMIT = 10
+
+# Thumbnails in static/images/category/thumbs/ (made from the full-size
+# sticker art in static/images/category/). Unlisted categories show their icon.
+CATEGORY_IMAGES = {
+    "Animals": "animals.webp",
+    "Anime": "anime.webp",
+    "Gaming": "gaming.webp",
+    "Kathmandu": "kathmandu.webp",
+    "Minimal": "minimal.webp",
+    "Nature": "nature.webp",
+    "Pop Culture": "pop-culture.webp",
+    "Quotes": "quotes.webp",
+    "Travel": "travel.webp",
+}
+
+
+# Sticker page: extra photos from other angles, and "You may also like"
+MAX_EXTRA_PHOTOS = 4
+SIMILAR_LIMIT = 5
+
+
+def save_sticker_details(sticker, form, files):
+    """Save the optional product details and extra photos from the create /
+    edit sticker forms. Returns how many photo uploads were skipped."""
+    material = (form.get("material") or "").strip()[:120] or None
+    dimensions = (form.get("dimensions") or "").strip()[:60] or None
+    finish = (form.get("finish") or "").strip()[:60] or None
+
+    if material or dimensions or finish or sticker.spec:
+        if not sticker.spec:
+            sticker.spec = StickerSpec()
+        sticker.spec.material = material
+        sticker.spec.dimensions = dimensions
+        sticker.spec.finish = finish
+
+    remove_ids = set(form.getlist("remove_photo"))
+    for photo in list(sticker.photos):
+        if str(photo.id) in remove_ids:
+            # Only delete files this feature saved, never a shared image
+            if photo.filename.startswith("angles/"):
+                remove_upload(photo.filename)
+            sticker.photos.remove(photo)
+
+    skipped = 0
+    for file in files.getlist("photos"):
+        if not file or not file.filename:
+            continue
+        if len(sticker.photos) >= MAX_EXTRA_PHOTOS:
+            skipped += 1
+            continue
+        filename = save_upload(file, "angles")
+        if not filename:
+            skipped += 1
+            continue
+        sticker.photos.append(StickerPhoto(filename=filename))
+
+    for position, photo in enumerate(sticker.photos):
+        photo.position = position
+
+    return skipped
+
+
+def category_summaries():
+    """Every category A-Z with its sticker count and thumbnail."""
+    rows = (
+        db.session.query(Category, func.count(Sticker.id))
+        .outerjoin(Sticker, Sticker.category_id == Category.id)
+        .group_by(Category.id)
+        .order_by(Category.name)
+        .all()
+    )
+    return [
+        {
+            "category": category,
+            "count": count,
+            "image": CATEGORY_IMAGES.get(category.name),
+        }
+        for category, count in rows
+    ]
+
+
+# Shop and search load this many stickers at a time; more load on scroll.
+SHOP_PAGE_SIZE = 20
+
+
+def render_sticker_list(query, title, active_category=None, search=None):
+    """Render the shop page, or with ?partial=1 just the next batch of cards
+    (used by the infinite scroll in static/js/main.js)."""
+    page = max(1, request.args.get("page", 1, type=int))
+    total = query.count()
+    stickers = (
+        query.order_by(Sticker.id.desc())
+        .offset((page - 1) * SHOP_PAGE_SIZE)
+        .limit(SHOP_PAGE_SIZE)
+        .all()
+    )
+
+    next_url = None
+    if page * SHOP_PAGE_SIZE < total:
+        args = {k: v for k, v in request.args.items() if k not in ("page", "partial")}
+        next_url = url_for(request.endpoint, page=page + 1, **args)
+
+    context = dict(
+        stickers=stickers,
+        like_counts=like_counts_for(stickers),
+        liked_ids=current_liked_ids(),
+    )
+
+    if request.args.get("partial"):
+        response = make_response(render_template("components/sticker_grid_items.html", **context))
+        response.headers["X-Next-Page"] = next_url or ""
+        return response
+
+    return render_template(
+        "shop.html",
+        title=title,
+        total=total,
+        next_url=next_url,
+        categories=category_summaries(),
+        all_count=Sticker.query.count(),
+        active_category=active_category,
+        search=search,
+        **context
+    )
+
+
+def like_counts_for(stickers):
+    """Map sticker id -> number of likes (wishlist saves)."""
+    if not stickers:
+        return {}
+    return dict(
+        db.session.query(Wishlist.sticker_id, func.count(Wishlist.id))
+        .filter(Wishlist.sticker_id.in_([s.id for s in stickers]))
+        .group_by(Wishlist.sticker_id)
+        .all()
+    )
+
+
+def followed_artist_ids():
+    """Ids of artists the signed-in user follows."""
+    if "user_id" not in session:
+        return set()
+    return {
+        follow.artist_id
+        for follow in Follow.query.filter_by(user_id=session["user_id"])
+    }
+
+
+def current_liked_ids():
+    """Ids of stickers the signed-in user has liked."""
+    if "user_id" not in session:
+        return set()
+    return {
+        item.sticker_id
+        for item in Wishlist.query.filter_by(user_id=session["user_id"])
+    }
+
+
 @app.context_processor
-def inject_categories():
-    return dict(nav_categories=Category.query.all())
+def inject_navbar():
+    # The navbar's account menu needs the signed-in user's role and photo.
+    nav_user = None
+    if session.get("user_id"):
+        nav_user = User.query.get(session["user_id"])
+
+    return dict(
+        nav_categories=Category.query.order_by(Category.name).all(),
+        nav_user=nav_user
+    )
 
 @app.route("/")
 def home():
@@ -92,56 +260,118 @@ def home():
         .outerjoin(likes, likes.c.sticker_id == Sticker.id)
         .filter(Artist.user_id.isnot(None))
         .order_by(like_count.desc(), Sticker.id.desc())
-        .limit(6)
+        .limit(FEATURED_LIMIT)
         .all()
     )
 
-    liked_ids = set()
-    if "user_id" in session:
-        liked_ids = {
-            item.sticker_id
-            for item in Wishlist.query.filter_by(user_id=session["user_id"])
-        }
+    liked_ids = current_liked_ids()
 
-    categories = Category.query.all()
+    categories = category_summaries()
+
     return render_template(
         "index.html",
         featured=featured,
         liked_ids=liked_ids,
+        followed_ids=followed_artist_ids(),
         categories=categories
     )
 
 @app.route("/shop")
 def shop():
-    category_name = request.args.get('category')
+    category_name = request.args.get("category")
     if category_name:
-        stickers = Sticker.query.join(Category).filter(Category.name == category_name).all()
-    else:
-        stickers = Sticker.query.all()
-    return render_template("shop.html", stickers=stickers)
+        query = Sticker.query.join(Category).filter(Category.name == category_name)
+        return render_sticker_list(query, category_name, active_category=category_name)
+
+    return render_sticker_list(Sticker.query, "All Stickers")
 @app.route("/sticker/<int:sticker_id>")
 def sticker_detail(sticker_id):
     sticker = Sticker.query.get_or_404(sticker_id)
 
+    # Main image first, then any extra angles the artist uploaded
+    gallery = [sticker.image] + [photo.filename for photo in sticker.photos]
+
+    # "You may also like": same category first, then more from the artist
+    similar = (
+        Sticker.query
+        .filter(Sticker.category_id == sticker.category_id, Sticker.id != sticker.id)
+        .order_by(Sticker.id.desc())
+        .limit(SIMILAR_LIMIT)
+        .all()
+    )
+    if len(similar) < SIMILAR_LIMIT:
+        taken = {sticker.id, *(s.id for s in similar)}
+        similar += (
+            Sticker.query
+            .filter(Sticker.artist_id == sticker.artist_id, Sticker.id.notin_(taken))
+            .order_by(Sticker.id.desc())
+            .limit(SIMILAR_LIMIT - len(similar))
+            .all()
+        )
+
+    like_counts = like_counts_for([sticker, *similar])
+
     return render_template(
         "sticker_detail.html",
-        sticker=sticker
+        sticker=sticker,
+        gallery=gallery,
+        similar=similar,
+        like_counts=like_counts,
+        liked_ids=current_liked_ids()
     )
 
 @app.route("/search")
 def search():
-    q = request.args.get('q', '')
-    stickers = Sticker.query.filter(Sticker.name.ilike(f"%{q}%")).all()
-    return render_template("shop.html", stickers=stickers)
+    q = request.args.get("q", "").strip()
+    query = Sticker.query.filter(Sticker.name.ilike(f"%{q}%"))
+    title = f"Results for “{q}”" if q else "All Stickers"
+    return render_sticker_list(query, title, search=q)
 
 @app.route("/artists")
 def artists():
-    artist_list = Artist.query.all()
+    # The artist directory was removed; artists are found through their stickers.
+    return redirect(url_for("home"))
 
-    return render_template(
-        "artists.html",
-        artists=artist_list
-    )
+
+@app.route("/artists/<int:artist_id>/follow", methods=["POST"])
+def toggle_follow(artist_id):
+    # Called with fetch() by the Follow buttons; a plain form post redirects back.
+    wants_json = request.headers.get("X-Requested-With") == "fetch"
+
+    if "user_id" not in session:
+        if wants_json:
+            return jsonify(error="login required", login_url=url_for("login")), 401
+        flash("Please log in to follow artists.")
+        return redirect(url_for("login"))
+
+    artist = Artist.query.get_or_404(artist_id)
+
+    if artist.user_id == session["user_id"]:
+        if wants_json:
+            return jsonify(error="You can't follow yourself."), 400
+        flash("You can't follow yourself.")
+        return redirect(request.referrer or url_for("home"))
+
+    existing = Follow.query.filter_by(
+        user_id=session["user_id"],
+        artist_id=artist.id
+    ).first()
+
+    if existing:
+        db.session.delete(existing)
+        following = False
+    else:
+        db.session.add(Follow(user_id=session["user_id"], artist_id=artist.id))
+        following = True
+
+    db.session.commit()
+    followers = Follow.query.filter_by(artist_id=artist.id).count()
+
+    if wants_json:
+        return jsonify(following=following, followers=followers)
+
+    flash(f"You're now following {artist.display_name}." if following else f"You unfollowed {artist.display_name}.")
+    return redirect(request.referrer or url_for("artist_profile", artist_id=artist.id))
 
 
 @app.route("/artists/<int:artist_id>")
@@ -175,7 +405,9 @@ def artist_profile(artist_id):
         like_counts=like_counts,
         total_likes=sum(like_counts.values()),
         liked_ids=liked_ids,
-        is_owner=artist.user_id is not None and artist.user_id == session.get("user_id")
+        is_owner=artist.user_id is not None and artist.user_id == session.get("user_id"),
+        followers_count=Follow.query.filter_by(artist_id=artist.id).count(),
+        is_following=artist.id in followed_artist_ids()
     )
 
 @app.route("/apply-artist", methods=["POST"])
@@ -321,9 +553,11 @@ def profile():
 
     user = User.query.get_or_404(session["user_id"])
 
+    # Newest saves first; counts are total likes from every user
     wishlist_items = Wishlist.query.filter_by(
         user_id=user.id
-    ).all()
+    ).order_by(Wishlist.id.desc()).all()
+    wishlist_like_counts = like_counts_for([item.sticker for item in wishlist_items])
 
     artist = Artist.query.filter_by(user_id=user.id).first()
 
@@ -338,12 +572,21 @@ def profile():
        status="completed"
        ).all()
 
+    # Artists this user follows, most recently followed first
+    following = [
+        follow.artist
+        for follow in Follow.query.filter_by(user_id=user.id).order_by(Follow.id.desc())
+    ]
+
     return render_template(
     "profile/profile.html",
     user=user,
     wishlist_items=wishlist_items,
+    wishlist_like_counts=wishlist_like_counts,
     created_stickers=created_stickers,
     purchases=purchases,
+    following=following,
+    following_count=len(following),
     wishlist_count=len(wishlist_items),
     purchased_count=len(purchases),
     created_count=len(created_stickers)
@@ -517,7 +760,8 @@ def create_sticker():
             user=user,
             categories=categories,
             studio_asset=studio_asset,
-            form=request.values
+            form=request.values,
+            max_photos=MAX_EXTRA_PHOTOS
         )
 
     if request.method == "POST":
@@ -564,9 +808,12 @@ def create_sticker():
         )
 
         db.session.add(sticker)
+        skipped = save_sticker_details(sticker, request.form, request.files)
         db.session.commit()
 
         flash("Sticker published successfully!")
+        if skipped:
+            flash(f"{skipped} extra photo(s) skipped: use PNG, JPG or WebP, up to {MAX_EXTRA_PHOTOS} photos.")
         return redirect(url_for("artist_dashboard"))
 
     return show_form()
@@ -623,9 +870,12 @@ def edit_sticker(sticker_id):
 
             sticker.image = filename
 
+        skipped = save_sticker_details(sticker, request.form, request.files)
         db.session.commit()
 
         flash("Sticker updated successfully!")
+        if skipped:
+            flash(f"{skipped} extra photo(s) skipped: use PNG, JPG or WebP, up to {MAX_EXTRA_PHOTOS} photos.")
         return redirect(url_for("artist_dashboard"))
 
     return render_template(
@@ -633,7 +883,8 @@ def edit_sticker(sticker_id):
         user=user,
         artist=artist,
         sticker=sticker,
-        categories=categories
+        categories=categories,
+        max_photos=MAX_EXTRA_PHOTOS
     )
 
 @app.route("/delete-sticker/<int:sticker_id>", methods=["POST"])
@@ -673,7 +924,13 @@ def delete_sticker(sticker_id):
 
 @app.route("/wishlist/toggle/<int:sticker_id>", methods=["POST"])
 def toggle_wishlist(sticker_id):
+    # The heart button calls this with fetch() to like/unlike without a page
+    # reload; a plain form post (no JavaScript) still redirects back.
+    wants_json = request.headers.get("X-Requested-With") == "fetch"
+
     if "user_id" not in session:
+        if wants_json:
+            return jsonify(error="login required", login_url=url_for("login")), 401
         flash("Please log in to save stickers to your wishlist.")
         return redirect(url_for("login"))
 
@@ -687,14 +944,20 @@ def toggle_wishlist(sticker_id):
 
     if existing_item:
         db.session.delete(existing_item)
-        flash("Sticker removed from your wishlist.")
+        liked = False
     else:
         db.session.add(
             Wishlist(user_id=user.id, sticker_id=sticker.id)
         )
-        flash("Sticker added to your wishlist.")
+        liked = True
 
     db.session.commit()
+
+    if wants_json:
+        count = Wishlist.query.filter_by(sticker_id=sticker.id).count()
+        return jsonify(liked=liked, count=count)
+
+    flash("Sticker added to your wishlist." if liked else "Sticker removed from your wishlist.")
     return redirect(request.referrer or url_for("shop"))
 
 @app.route("/logout")
