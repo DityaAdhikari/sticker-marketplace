@@ -24,6 +24,18 @@
         <span aria-current="page">{{ sticker.name }}</span>
     </nav>
 
+    {% if not sticker.is_live %}
+        {# Only the artist and admins can open an unapproved sticker #}
+        <div class="pd-review-banner review-{{ sticker.status }}">
+            <i class="fa-solid {{ 'fa-hourglass-half' if sticker.status == 'pending' else 'fa-circle-xmark' }}"></i>
+            {% if sticker.status == "pending" %}
+                This sticker is waiting for admin review and isn't visible in the shop yet.
+            {% else %}
+                This sticker was rejected{{ ": " + sticker.review.admin_note if sticker.review.admin_note }}. It isn't visible in the shop.
+            {% endif %}
+        </div>
+    {% endif %}
+
     <section class="pd">
 
         <!-- Gallery: main image opens a full view; thumbnails only when the artist added other angles -->

@@ -1,0 +1,200 @@
+
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | StickerNest{% endblock %}
+
+{% block content %}
+
+<div class="admin-dashboard">
+
+    <!-- Dashboard Header -->
+    <header class="admin-header">
+        <div>
+            <span class="admin-eyebrow">STICKERNEST ADMINISTRATION</span>
+            <h1>Admin Dashboard</h1>
+            <p>Manage your StickerNest marketplace.</p>
+        </div>
+    </header>
+
+    <!-- Review queue alert -->
+    {% if pending_stickers %}
+        <a href="{{ url_for('admin_stickers', status='pending') }}" class="review-alert">
+            <span class="review-alert-icon"><i class="fa-solid fa-hourglass-half"></i></span>
+            <span class="review-alert-text">
+                <strong>{{ pending_stickers }} {{ 'sticker is' if pending_stickers == 1 else 'stickers are' }} waiting for review</strong>
+                <span>Approve them and set their prices to put them in the shop.</span>
+            </span>
+            <span class="review-alert-cta">Review now →</span>
+        </a>
+    {% endif %}
+
+    <!-- Overview Statistics -->
+    <section class="admin-overview">
+        <div class="section-heading">
+            <div>
+                <h2>Overview</h2>
+                <p>Your marketplace at a glance.</p>
+            </div>
+        </div>
+
+        <div class="admin-stats">
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Users</span>
+                    <span class="stat-icon">♙</span>
+                </div>
+                <p class="stat-number">{{ total_users }}</p>
+                <span class="stat-description">Registered accounts</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Artists</span>
+                    <span class="stat-icon">✿</span>
+                </div>
+                <p class="stat-number">{{ total_artists }}</p>
+                <span class="stat-description">Marketplace artists</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Stickers</span>
+                    <span class="stat-icon">▧</span>
+                </div>
+                <p class="stat-number">{{ total_stickers }}</p>
+                <span class="stat-description">Live in the shop{% if pending_stickers %} · {{ pending_stickers }} pending{% endif %}</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Purchases</span>
+                    <span class="stat-icon">▤</span>
+                </div>
+                <p class="stat-number">{{ total_purchases }}</p>
+                <span class="stat-description">Completed orders</span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Marketplace Management -->
+    <section class="admin-management">
+
+        <div class="section-heading">
+            <div>
+                <h2>Marketplace Management</h2>
+                <p>Manage the people and products on your platform.</p>
+            </div>
+        </div>
+
+        <div class="management-grid">
+
+            <!-- User Management -->
+            <a href="{{ url_for('admin_users') }}" class="management-card">
+               <div class="management-icon">♙</div>
+                <h3>User Management</h3>
+                <p>View registered customers and manage user accounts.</p>
+                <span class="management-link">Manage Users <span>→</span></span>
+            </a>
+
+            <!-- Artist Management -->
+            <a href="{{ url_for('admin_artists') }}" class="management-card">
+                <div class="management-icon">✿</div>
+                <h3>Artist Management</h3>
+                <p>Monitor artist accounts and manage marketplace creators.</p>
+                <span class="management-link">Manage Artists <span>→</span></span>
+            </a>
+
+            <!-- Sticker Management -->
+            <a href="{{ url_for('admin_stickers') }}" class="management-card">
+                <div class="management-icon">▧</div>
+                <h3>Sticker Management</h3>
+                <p>Approve new stickers, set prices and manage the catalogue.</p>
+                <span class="management-link">Manage Stickers <span>→</span></span>
+            </a>
+
+            <!-- Order Management -->
+            <div class="management-card coming-soon">
+                <div class="management-icon">▤</div>
+                <h3>Order Management</h3>
+                <p>Monitor customer orders, payments and fulfilment.</p>
+                <span class="coming-soon-label">Coming Soon</span>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="admin-activity">
+
+        <div class="section-heading">
+            <div>
+                <h2>Recent Activity</h2>
+                <p>The newest accounts and stickers on StickerNest.</p>
+            </div>
+        </div>
+
+        <div class="activity-grid">
+
+            <div class="activity-panel">
+                <div class="activity-panel-head">
+                    <h3>Newest Users</h3>
+                    <a href="{{ url_for('admin_users') }}">View all</a>
+                </div>
+
+                <ul class="activity-list">
+                    {% for user in recent_users %}
+                    <li>
+                        <span class="activity-avatar">{{ user.name[0]|upper }}</span>
+                        <div class="activity-text">
+                            <strong>{{ user.name }}</strong>
+                            <span>{{ user.email }}</span>
+                        </div>
+                        <span class="role-label role-{{ user.role }}">{{ user.role|capitalize }}</span>
+                    </li>
+                    {% else %}
+                    <li class="activity-empty">No users yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="activity-panel">
+                <div class="activity-panel-head">
+                    <h3>Newest Stickers</h3>
+                    <a href="{{ url_for('admin_stickers') }}">View all</a>
+                </div>
+
+                <ul class="activity-list">
+                    {% for sticker in recent_stickers %}
+                    <li>
+                        <img class="activity-thumb"
+                             src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                             alt="{{ sticker.name }}">
+                        <div class="activity-text">
+                            <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}"><strong>{{ sticker.name }}</strong></a>
+                            <span>by {{ sticker.artist.display_name }}</span>
+                        </div>
+                        {% if sticker.is_live %}
+                            <span class="activity-price">Rs. {{ sticker.price|int }}</span>
+                        {% else %}
+                            <span class="review-status review-{{ sticker.status }}">{{ sticker.status|capitalize }}</span>
+                        {% endif %}
+                    </li>
+                    {% else %}
+                    <li class="activity-empty">No stickers yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="admin-footer">
+        <p>StickerNest Administration · Manage your creative marketplace.</p>
+    </footer>
+
+</div>
+
+{% endblock %}

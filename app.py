@@ -4,14 +4,17 @@ from werkzeug import Response
 from werkzeug.utils import secure_filename
 import os
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response
-from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase, StickerPhoto, StickerSpec, Follow
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response, abort
+from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase, StickerPhoto, StickerSpec, Follow, NotificationPreference, PrivacyPreference, StickerReview
 from studio_api import studio_api, studio_asset_exists, claim_studio_asset, save_upload, remove_upload
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import func
 from dotenv import load_dotenv
 import secrets
+
+import uuid
+from datetime import datetime
 
 load_dotenv()
 
@@ -89,6 +92,7 @@ CATEGORY_IMAGES = {
 # Sticker page: extra photos from other angles, and "You may also like"
 MAX_EXTRA_PHOTOS = 4
 SIMILAR_LIMIT = 5
+SEARCH_ARTIST_LIMIT = 8
 
 
 def save_sticker_details(sticker, form, files):
@@ -132,11 +136,23 @@ def save_sticker_details(sticker, form, files):
     return skipped
 
 
+def sticker_is_live():
+    """Filter for stickers shoppers can see: approved by an admin, or from
+    before reviews existed (no review row)."""
+    hidden = db.select(StickerReview.sticker_id).where(
+        StickerReview.status != "approved"
+    )
+    return Sticker.id.notin_(hidden)
+
+
 def category_summaries():
     """Every category A-Z with its sticker count and thumbnail."""
     rows = (
         db.session.query(Category, func.count(Sticker.id))
-        .outerjoin(Sticker, Sticker.category_id == Category.id)
+        .outerjoin(
+            Sticker,
+            db.and_(Sticker.category_id == Category.id, sticker_is_live())
+        )
         .group_by(Category.id)
         .order_by(Category.name)
         .all()
@@ -155,7 +171,7 @@ def category_summaries():
 SHOP_PAGE_SIZE = 20
 
 
-def render_sticker_list(query, title, active_category=None, search=None):
+def render_sticker_list(query, title, active_category=None, search=None, matched_artists=None):
     """Render the shop page, or with ?partial=1 just the next batch of cards
     (used by the infinite scroll in static/js/main.js)."""
     page = max(1, request.args.get("page", 1, type=int))
@@ -189,9 +205,10 @@ def render_sticker_list(query, title, active_category=None, search=None):
         total=total,
         next_url=next_url,
         categories=category_summaries(),
-        all_count=Sticker.query.count(),
+        all_count=Sticker.query.filter(sticker_is_live()).count(),
         active_category=active_category,
         search=search,
+        matched_artists=matched_artists or [],
         **context
     )
 
@@ -258,7 +275,7 @@ def home():
         db.session.query(Sticker, like_count)
         .join(Artist, Sticker.artist_id == Artist.id)
         .outerjoin(likes, likes.c.sticker_id == Sticker.id)
-        .filter(Artist.user_id.isnot(None))
+        .filter(Artist.user_id.isnot(None), sticker_is_live())
         .order_by(like_count.desc(), Sticker.id.desc())
         .limit(FEATURED_LIMIT)
         .all()
@@ -280,13 +297,22 @@ def home():
 def shop():
     category_name = request.args.get("category")
     if category_name:
-        query = Sticker.query.join(Category).filter(Category.name == category_name)
+        query = Sticker.query.join(Category).filter(
+            Category.name == category_name, sticker_is_live()
+        )
         return render_sticker_list(query, category_name, active_category=category_name)
 
-    return render_sticker_list(Sticker.query, "All Stickers")
+    return render_sticker_list(Sticker.query.filter(sticker_is_live()), "All Stickers")
 @app.route("/sticker/<int:sticker_id>")
 def sticker_detail(sticker_id):
     sticker = Sticker.query.get_or_404(sticker_id)
+
+    # Unapproved stickers are only visible to their artist and admins
+    if not sticker.is_live:
+        viewer = db.session.get(User, session["user_id"]) if "user_id" in session else None
+        is_owner = viewer and sticker.artist.user_id == viewer.id
+        if not (is_owner or (viewer and viewer.role == "admin")):
+            abort(404)
 
     # Main image first, then any extra angles the artist uploaded
     gallery = [sticker.image] + [photo.filename for photo in sticker.photos]
@@ -294,7 +320,7 @@ def sticker_detail(sticker_id):
     # "You may also like": same category first, then more from the artist
     similar = (
         Sticker.query
-        .filter(Sticker.category_id == sticker.category_id, Sticker.id != sticker.id)
+        .filter(Sticker.category_id == sticker.category_id, Sticker.id != sticker.id, sticker_is_live())
         .order_by(Sticker.id.desc())
         .limit(SIMILAR_LIMIT)
         .all()
@@ -303,7 +329,7 @@ def sticker_detail(sticker_id):
         taken = {sticker.id, *(s.id for s in similar)}
         similar += (
             Sticker.query
-            .filter(Sticker.artist_id == sticker.artist_id, Sticker.id.notin_(taken))
+            .filter(Sticker.artist_id == sticker.artist_id, Sticker.id.notin_(taken), sticker_is_live())
             .order_by(Sticker.id.desc())
             .limit(SIMILAR_LIMIT - len(similar))
             .all()
@@ -323,9 +349,45 @@ def sticker_detail(sticker_id):
 @app.route("/search")
 def search():
     q = request.args.get("q", "").strip()
-    query = Sticker.query.filter(Sticker.name.ilike(f"%{q}%"))
+    query = Sticker.query.filter(sticker_is_live())
+    matched_artists = []
+
+    if q:
+        like = f"%{q}%"
+
+        # Match the sticker, its category, or its artist. Artists with an
+        # account show their account name, so search that too.
+        query = (
+            query.join(Artist, Sticker.artist_id == Artist.id)
+            .outerjoin(User, Artist.user_id == User.id)
+            .join(Category, Sticker.category_id == Category.id)
+            .filter(
+                db.or_(
+                    Sticker.name.ilike(like),
+                    Category.name.ilike(like),
+                    Artist.name.ilike(like),
+                    Artist.handle.ilike(like),
+                    User.name.ilike(like)
+                )
+            )
+        )
+
+        matched_artists = (
+            Artist.query.outerjoin(User, Artist.user_id == User.id)
+            .filter(
+                db.or_(
+                    Artist.name.ilike(like),
+                    Artist.handle.ilike(like),
+                    User.name.ilike(like)
+                )
+            )
+            .order_by(Artist.name)
+            .limit(SEARCH_ARTIST_LIMIT)
+            .all()
+        )
+
     title = f"Results for “{q}”" if q else "All Stickers"
-    return render_sticker_list(query, title, search=q)
+    return render_sticker_list(query, title, search=q, matched_artists=matched_artists)
 
 @app.route("/artists")
 def artists():
@@ -378,8 +440,8 @@ def toggle_follow(artist_id):
 def artist_profile(artist_id):
     artist = Artist.query.get_or_404(artist_id)
 
-    stickers = Sticker.query.filter_by(
-        artist_id=artist.id
+    stickers = Sticker.query.filter(
+        Sticker.artist_id == artist.id, sticker_is_live()
     ).order_by(Sticker.id.desc()).all()
 
     like_counts = {}
@@ -415,42 +477,42 @@ def apply_artist():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    user = User.query.get(session["user_id"])
+    user = User.query.get_or_404(session["user_id"])
+
+    if user.role == "admin":
+        flash("Admin accounts cannot apply as artists.")
+        return redirect(url_for("profile"))
 
     if user.role == "artist":
         flash("You are already an artist.")
         return redirect(url_for("profile"))
 
-    if user.artist_status == "pending":
-        flash("Your artist application is already pending.")
-        return redirect(url_for("profile"))
+    # Check whether an Artist profile already exists
+    existing_artist = Artist.query.filter_by(
+        user_id=user.id
+    ).first()
 
-    user.artist_status = "pending"
+    if existing_artist:
+        user.role = "artist"
+        user.artist_status = "approved"
+    else:
+        artist = Artist(
+            user_id=user.id,
+            name=user.name,
+            handle="@" + user.name.lower().replace(" ", "_"),
+            bio=user.bio,
+            avatar=user.profile_image
+        )
+
+        db.session.add(artist)
+
+        user.role = "artist"
+        user.artist_status = "approved"
+
     db.session.commit()
 
-    flash("Artist application submitted. Please wait for admin approval.")
+    flash("Congratulations! You are now a StickerNest artist.")
     return redirect(url_for("profile"))
-
-
-@app.route("/admin/artist-requests")
-def artist_requests():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    admin = User.query.get(session["user_id"])
-
-    if admin.role != "admin":
-        flash("Access denied.")
-        return redirect(url_for("home"))
-
-    pending_users = User.query.filter_by(
-        artist_status="pending"
-    ).all()
-
-    return render_template(
-        "admin/artist_requests.html",
-        users=pending_users
-    )
 
 
 @app.route("/about")
@@ -464,6 +526,7 @@ def contact():
 
 def find_user_by_email(email):
     return User.query.filter(func.lower(User.email) == email).first()
+
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -482,17 +545,27 @@ def login():
 
         if check_password_hash(password_hash, password) and user:
 
-            # Start a fresh session so nothing from before login carries over.
+            # Assign admin role to the designated admin account.
+            if user.email.lower() == ADMIN_EMAIL.lower():
+                user.role = "admin"
+                db.session.commit()
+
+            # Start a fresh session.
             session.clear()
             session["user_id"] = user.id
             session["user_name"] = user.name
 
             flash("Welcome back!")
+
+            if user.role == "admin":
+                return redirect(url_for("admin_dashboard"))
+
             return redirect(url_for("home"))
 
         flash("Invalid email or password.")
 
     return render_template("login.html")
+
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -554,17 +627,20 @@ def profile():
     user = User.query.get_or_404(session["user_id"])
 
     # Newest saves first; counts are total likes from every user
-    wishlist_items = Wishlist.query.filter_by(
-        user_id=user.id
-    ).order_by(Wishlist.id.desc()).all()
+    wishlist_items = (
+        Wishlist.query.join(Sticker)
+        .filter(Wishlist.user_id == user.id, sticker_is_live())
+        .order_by(Wishlist.id.desc())
+        .all()
+    )
     wishlist_like_counts = like_counts_for([item.sticker for item in wishlist_items])
 
     artist = Artist.query.filter_by(user_id=user.id).first()
 
     created_stickers = []
     if artist:
-        created_stickers = Sticker.query.filter_by(
-            artist_id=artist.id
+        created_stickers = Sticker.query.filter(
+            Sticker.artist_id == artist.id, sticker_is_live()
         ).all()
 
     purchases = Purchase.query.filter_by(
@@ -611,7 +687,9 @@ def edit_profile():
 
         if file and file.filename:
 
-            filename = secure_filename(file.filename)
+            original_name = secure_filename(file.filename)
+            extension = os.path.splitext(original_name)[1].lower()
+            filename = f"{uuid.uuid4().hex}{extension}"
 
             upload_folder = os.path.join(
                 app.static_folder,
@@ -629,69 +707,17 @@ def edit_profile():
         db.session.commit()
 
         flash("Profile updated successfully!")
+
+        # The settings page reuses this form; send the user back there
+        if request.form.get("next") == "settings":
+            return redirect(url_for("settings", tab="profile"))
+
         return redirect(url_for("profile"))
 
     return render_template(
         "profile/edit_profile.html",
         user=user
     )
-@app.route("/admin/approve-artist/<int:user_id>", methods=["POST"])
-def approve_artist(user_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    admin = User.query.get(session["user_id"])
-
-    if admin.role != "admin":
-        flash("Access denied.")
-        return redirect(url_for("home"))
-
-    user = User.query.get_or_404(user_id)
-
-    if user.artist_status != "pending":
-        flash("No pending artist request.")
-        return redirect(url_for("artist_requests"))
-
-    artist = Artist(
-        user_id=user.id,
-        name=user.name,
-        handle="@" + user.name.lower().replace(" ", "_"),
-        bio=user.bio,
-        avatar=user.profile_image
-    )
-
-    user.role = "artist"
-    user.artist_status = "approved"
-
-    db.session.add(artist)
-    db.session.commit()
-
-    flash(f"{user.name} is now an artist.")
-    return redirect(url_for("artist_requests"))
-
-@app.route("/admin/reject-artist/<int:user_id>", methods=["POST"])
-def reject_artist(user_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    admin = User.query.get(session["user_id"])
-
-    if admin.role != "admin":
-        flash("Access denied.")
-        return redirect(url_for("home"))
-
-    user = User.query.get_or_404(user_id)
-
-    if user.artist_status != "pending":
-        flash("No pending artist request.")
-        return redirect(url_for("artist_requests"))
-
-    user.artist_status = "rejected"
-
-    db.session.commit()
-
-    flash(f"{user.name}'s artist request was rejected.")
-    return redirect(url_for("artist_requests"))
 
 @app.route("/artist-dashboard")
 def artist_dashboard():
@@ -798,6 +824,8 @@ def create_sticker():
         else:
             filename = claim_studio_asset(studio_asset)
 
+        # The artist's price is a suggestion; the admin sets the final
+        # price when approving. Until then the sticker stays hidden.
         sticker = Sticker(
             name=name,
             description=description,
@@ -806,12 +834,13 @@ def create_sticker():
             artist_id=artist.id,
             category_id=int(category_id)
         )
+        sticker.review = StickerReview(proposed_price=float(price))
 
         db.session.add(sticker)
         skipped = save_sticker_details(sticker, request.form, request.files)
         db.session.commit()
 
-        flash("Sticker published successfully!")
+        flash("Sticker submitted! It will appear in the shop once an admin approves it.")
         if skipped:
             flash(f"{skipped} extra photo(s) skipped: use PNG, JPG or WebP, up to {MAX_EXTRA_PHOTOS} photos.")
         return redirect(url_for("artist_dashboard"))
@@ -849,8 +878,18 @@ def edit_sticker(sticker_id):
     if request.method == "POST":
         sticker.name = request.form.get("name")
         sticker.description = request.form.get("description")
-        sticker.price = float(request.form.get("price"))
         sticker.category_id = int(request.form.get("category_id"))
+
+        # Any edit goes back to the admin for review. The live price only
+        # changes when the admin approves the suggested one.
+        proposed_price = float(request.form.get("price"))
+        if not sticker.review:
+            sticker.review = StickerReview(proposed_price=proposed_price)
+        sticker.review.status = "pending"
+        sticker.review.proposed_price = proposed_price
+        sticker.review.admin_note = None
+        sticker.review.submitted_at = datetime.utcnow()
+        sticker.review.reviewed_at = None
 
         image = request.files.get("image")
 
@@ -873,7 +912,7 @@ def edit_sticker(sticker_id):
         skipped = save_sticker_details(sticker, request.form, request.files)
         db.session.commit()
 
-        flash("Sticker updated successfully!")
+        flash("Sticker updated and sent for admin review.")
         if skipped:
             flash(f"{skipped} extra photo(s) skipped: use PNG, JPG or WebP, up to {MAX_EXTRA_PHOTOS} photos.")
         return redirect(url_for("artist_dashboard"))
@@ -945,6 +984,8 @@ def toggle_wishlist(sticker_id):
     if existing_item:
         db.session.delete(existing_item)
         liked = False
+    elif not sticker.is_live:
+        abort(404)
     else:
         db.session.add(
             Wishlist(user_id=user.id, sticker_id=sticker.id)
@@ -959,6 +1000,533 @@ def toggle_wishlist(sticker_id):
 
     flash("Sticker added to your wishlist." if liked else "Sticker removed from your wishlist.")
     return redirect(request.referrer or url_for("shop"))
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
+
+    # 1. Check whether the user is logged in
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # 2. Find the logged-in user
+    admin = db.session.get(User, session["user_id"])
+
+    # 3. Verify administrator permission
+    if not admin or admin.role != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    # 4. Count database records
+    total_users = User.query.count()
+    total_artists = Artist.query.count()
+    total_stickers = Sticker.query.filter(sticker_is_live()).count()
+    total_purchases = Purchase.query.count()
+    pending_stickers = StickerReview.query.filter_by(status="pending").count()
+
+    # 5. Latest activity for the "Recent activity" panels
+    recent_users = User.query.order_by(User.id.desc()).limit(5).all()
+    recent_stickers = Sticker.query.order_by(Sticker.id.desc()).limit(5).all()
+
+    # 6. Send statistics to the dashboard
+    return render_template(
+        "admin/dashboard.html",
+        total_users=total_users,
+        total_artists=total_artists,
+        total_stickers=total_stickers,
+        total_purchases=total_purchases,
+        pending_stickers=pending_stickers,
+        recent_users=recent_users,
+        recent_stickers=recent_stickers
+    )
+
+
+STICKER_STATUSES = ["pending", "approved", "rejected"]
+
+
+def current_admin():
+    """Return the logged-in admin, or None if the visitor isn't one."""
+    if "user_id" not in session:
+        return None
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user or user.role != "admin":
+        return None
+
+    return user
+
+
+@app.route("/admin/artists")
+def admin_artists():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not current_admin():
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    search = request.args.get("search", "").strip()
+
+    query = Artist.query.outerjoin(User, Artist.user_id == User.id)
+
+    # Search by artist name, handle, account name or email
+    if search:
+        like = f"%{search}%"
+        query = query.filter(
+            db.or_(
+                Artist.name.ilike(like),
+                Artist.handle.ilike(like),
+                User.name.ilike(like),
+                User.email.ilike(like)
+            )
+        )
+
+    artists = query.order_by(Artist.id.desc()).all()
+
+    artist_ids = [a.id for a in artists]
+    sticker_counts = {}
+    follower_counts = {}
+
+    if artist_ids:
+        sticker_counts = dict(
+            db.session.query(Sticker.artist_id, func.count(Sticker.id))
+            .filter(Sticker.artist_id.in_(artist_ids))
+            .group_by(Sticker.artist_id)
+            .all()
+        )
+        follower_counts = dict(
+            db.session.query(Follow.artist_id, func.count(Follow.id))
+            .filter(Follow.artist_id.in_(artist_ids))
+            .group_by(Follow.artist_id)
+            .all()
+        )
+
+    return render_template(
+        "admin/artists.html",
+        artists=artists,
+        search=search,
+        sticker_counts=sticker_counts,
+        follower_counts=follower_counts
+    )
+
+
+@app.route("/admin/stickers")
+def admin_stickers():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not current_admin():
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    search = request.args.get("search", "").strip()
+    selected_category = request.args.get("category", type=int)
+
+    # Opens on the review queue; "all" shows every sticker
+    selected_status = request.args.get("status", "pending")
+    if selected_status not in STICKER_STATUSES + ["all"]:
+        selected_status = "pending"
+
+    query = Sticker.query.join(Artist)
+
+    if selected_status == "approved":
+        query = query.filter(sticker_is_live())
+    elif selected_status != "all":
+        query = query.filter(
+            Sticker.id.in_(
+                db.select(StickerReview.sticker_id).where(
+                    StickerReview.status == selected_status
+                )
+            )
+        )
+
+    # Search by sticker or artist name
+    if search:
+        like = f"%{search}%"
+        query = query.filter(
+            db.or_(
+                Sticker.name.ilike(like),
+                Artist.name.ilike(like)
+            )
+        )
+
+    if selected_category:
+        query = query.filter(Sticker.category_id == selected_category)
+
+    stickers = query.order_by(Sticker.id.desc()).all()
+
+    status_counts = dict(
+        db.session.query(StickerReview.status, func.count(StickerReview.sticker_id))
+        .group_by(StickerReview.status)
+        .all()
+    )
+    status_counts["approved"] = Sticker.query.filter(sticker_is_live()).count()
+    status_counts["all"] = Sticker.query.count()
+
+    sticker_ids = [s.id for s in stickers]
+    purchase_counts = {}
+
+    if sticker_ids:
+        purchase_counts = dict(
+            db.session.query(Purchase.sticker_id, func.count(Purchase.id))
+            .filter(Purchase.sticker_id.in_(sticker_ids))
+            .group_by(Purchase.sticker_id)
+            .all()
+        )
+
+    return render_template(
+        "admin/stickers.html",
+        stickers=stickers,
+        categories=Category.query.order_by(Category.name).all(),
+        search=search,
+        selected_category=selected_category,
+        selected_status=selected_status,
+        status_counts=status_counts,
+        like_counts=like_counts_for(stickers),
+        purchase_counts=purchase_counts
+    )
+
+
+@app.route("/admin/stickers/<int:sticker_id>/approve", methods=["POST"])
+def admin_approve_sticker(sticker_id):
+    """Approve a sticker at the admin's price. Also used to change the
+    price of a sticker that's already live."""
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not current_admin():
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    sticker = Sticker.query.get_or_404(sticker_id)
+    price = request.form.get("price", type=float)
+
+    if price is None or price <= 0:
+        flash("Please enter a price greater than 0.")
+        return redirect(request.referrer or url_for("admin_stickers"))
+
+    was_live = sticker.is_live
+    sticker.price = round(price, 2)
+
+    if not sticker.review:
+        sticker.review = StickerReview(proposed_price=sticker.price)
+    sticker.review.status = "approved"
+    sticker.review.admin_note = None
+    sticker.review.reviewed_at = datetime.utcnow()
+
+    db.session.commit()
+
+    if was_live:
+        flash(f"Price of \"{sticker.name}\" updated to Rs. {sticker.price:g}.")
+    else:
+        flash(f"\"{sticker.name}\" approved at Rs. {sticker.price:g}. It's now live in the shop.")
+    return redirect(request.referrer or url_for("admin_stickers"))
+
+
+@app.route("/admin/stickers/<int:sticker_id>/reject", methods=["POST"])
+def admin_reject_sticker(sticker_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not current_admin():
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    sticker = Sticker.query.get_or_404(sticker_id)
+    note = request.form.get("note", "").strip()[:300]
+
+    if not sticker.review:
+        sticker.review = StickerReview(proposed_price=sticker.price)
+    sticker.review.status = "rejected"
+    sticker.review.admin_note = note or None
+    sticker.review.reviewed_at = datetime.utcnow()
+
+    db.session.commit()
+
+    flash(f"\"{sticker.name}\" rejected. The artist can edit and resubmit it.")
+    return redirect(request.referrer or url_for("admin_stickers"))
+
+
+@app.route("/admin/stickers/<int:sticker_id>/delete", methods=["POST"])
+def admin_delete_sticker(sticker_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not current_admin():
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    sticker = Sticker.query.get_or_404(sticker_id)
+
+    # Same rule as artists: keep order history intact.
+    if Purchase.query.filter_by(sticker_id=sticker.id).first():
+        flash("This sticker has been purchased, so it can't be deleted.")
+        return redirect(request.referrer or url_for("admin_stickers"))
+
+    Wishlist.query.filter_by(sticker_id=sticker.id).delete()
+    db.session.delete(sticker)
+    db.session.commit()
+
+    flash(f"Sticker \"{sticker.name}\" deleted.")
+    return redirect(request.referrer or url_for("admin_stickers"))
+
+@app.route("/admin/users")
+def admin_users():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    admin = db.session.get(User, session["user_id"])
+
+    if not admin or admin.role != "admin":
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    search = request.args.get("search", "").strip()
+    selected_role = request.args.get("role", "").strip().lower()
+
+    query = User.query
+
+    # Search by name or email
+    if search:
+        query = query.filter(
+            db.or_(
+                User.name.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%")
+            )
+        )
+
+    # Filter by account role
+    if selected_role in ["customer", "artist", "admin"]:
+        query = query.filter(User.role == selected_role)
+    else:
+        selected_role = ""
+
+    users = query.order_by(User.id.desc()).all()
+
+    return render_template(
+        "admin/users.html",
+        users=users,
+        search=search,
+        selected_role=selected_role
+    )
+
+SETTINGS_TABS = ["profile", "notifications", "security", "privacy"]
+
+@app.route("/settings")
+def settings():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    # Get this user's notification preferences
+    notification_preferences = NotificationPreference.query.filter_by(
+        user_id=user.id
+    ).first()
+
+    # Create default preferences if they don't exist
+    if not notification_preferences:
+        notification_preferences = NotificationPreference(
+            user_id=user.id
+        )
+        db.session.add(notification_preferences)
+        db.session.commit()
+
+    # Open the tab the user was on before saving
+    active_tab = request.args.get("tab", "profile")
+    if active_tab not in SETTINGS_TABS:
+        active_tab = "profile"
+
+    return render_template(
+        "settings.html",
+        user=user,
+        notification_preferences=notification_preferences,
+        privacy_preferences=user.privacy_preferences,
+        active_tab=active_tab,
+        min_password_length=MIN_PASSWORD_LENGTH,
+        is_admin_email=user.email.lower() == ADMIN_EMAIL.lower()
+    )
+
+@app.route("/settings/notifications", methods=["POST"])
+def save_notification_preferences():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    preferences = NotificationPreference.query.filter_by(
+        user_id=user.id
+    ).first()
+
+    if not preferences:
+        preferences = NotificationPreference(user_id=user.id)
+        db.session.add(preferences)
+
+    preferences.new_followers = "new_followers" in request.form
+    preferences.sticker_likes = "sticker_likes" in request.form
+    preferences.order_updates = "order_updates" in request.form
+    preferences.followed_artist_updates = "followed_artist_updates" in request.form
+    preferences.stickernest_announcements = "stickernest_announcements" in request.form
+
+    db.session.commit()
+
+    flash("Notification preferences saved successfully!")
+
+    return redirect(url_for("settings", tab="notifications"))
+
+@app.route("/settings/password", methods=["POST"])
+def change_password():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    current_password = request.form.get("current_password", "")
+    new_password = request.form.get("new_password", "")
+    confirm_password = request.form.get("confirm_password", "")
+
+    if not check_password_hash(user.password_hash, current_password):
+        flash("Your current password is incorrect.")
+    elif len(new_password) < MIN_PASSWORD_LENGTH:
+        flash(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
+    elif new_password != confirm_password:
+        flash("New passwords do not match.")
+    elif check_password_hash(user.password_hash, new_password):
+        flash("Your new password must be different from the current one.")
+    else:
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        flash("Password updated successfully!")
+
+    return redirect(url_for("settings", tab="security"))
+
+@app.route("/settings/email", methods=["POST"])
+def change_email():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    new_email = request.form.get("email", "").strip().lower()
+    current_password = request.form.get("current_password", "")
+
+    # Admin rights are tied to ADMIN_EMAIL at login, so that address can't
+    # be moved away from or claimed through this form.
+    if user.email.lower() == ADMIN_EMAIL.lower():
+        flash("The administrator email can't be changed here.")
+    elif not check_password_hash(user.password_hash, current_password):
+        flash("Your current password is incorrect.")
+    elif not new_email or "@" not in new_email:
+        flash("Please enter a valid email address.")
+    elif new_email == user.email.lower():
+        flash("That's already your email address.")
+    elif new_email == ADMIN_EMAIL.lower() or find_user_by_email(new_email):
+        flash("Email already exists.")
+    else:
+        user.email = new_email
+        db.session.commit()
+        flash("Email updated successfully!")
+
+    return redirect(url_for("settings", tab="security"))
+
+@app.route("/settings/privacy", methods=["POST"])
+def save_privacy_preferences():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    preferences = user.privacy_preferences
+
+    if not preferences:
+        preferences = PrivacyPreference(user_id=user.id)
+        db.session.add(preferences)
+
+    preferences.show_location = "show_location" in request.form
+
+    db.session.commit()
+
+    flash("Privacy settings saved successfully!")
+
+    return redirect(url_for("settings", tab="privacy"))
+
+@app.route("/settings/export")
+def export_account_data():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = db.session.get(User, session["user_id"])
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    notifications = user.notification_preferences
+    privacy = user.privacy_preferences
+
+    data = {
+        "account": {
+            "name": user.name,
+            "email": user.email,
+            "role": user.role,
+            "bio": user.bio,
+            "location": user.location,
+        },
+        "wishlist": [
+            {"sticker_id": item.sticker_id, "sticker": item.sticker.name}
+            for item in user.wishlist_items
+        ],
+        "purchases": [
+            {
+                "sticker_id": purchase.sticker_id,
+                "sticker": purchase.sticker.name,
+                "price": purchase.sticker.price,
+                "status": purchase.status,
+                "date": purchase.purchase_date.isoformat(),
+            }
+            for purchase in user.purchases
+        ],
+        "following": [
+            {"artist_id": follow.artist_id, "artist": follow.artist.display_name}
+            for follow in user.follows
+        ],
+        "notification_preferences": {
+            "new_followers": notifications.new_followers,
+            "sticker_likes": notifications.sticker_likes,
+            "order_updates": notifications.order_updates,
+            "followed_artist_updates": notifications.followed_artist_updates,
+            "stickernest_announcements": notifications.stickernest_announcements,
+        } if notifications else None,
+        "privacy_preferences": {
+            "show_location": privacy.show_location if privacy else True,
+        },
+    }
+
+    response = jsonify(data)
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=stickernest-account-data.json"
+    )
+    return response
 
 @app.route("/logout")
 def logout():

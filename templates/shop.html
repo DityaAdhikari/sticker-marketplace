@@ -54,6 +54,28 @@
       </div>
     </div>
 
+    {% if matched_artists %}
+      <div class="search-artists">
+        <h2 class="search-artists-title">Artists</h2>
+        <div class="search-artists-list">
+          {% for artist in matched_artists %}
+            <a href="{{ url_for('artist_profile', artist_id=artist.id) }}" class="search-artist">
+              {% if artist.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/' + artist.profile_image) }}" alt=""
+                     class="search-artist-avatar">
+              {% else %}
+                <span class="search-artist-avatar">{{ artist.display_name[0]|upper }}</span>
+              {% endif %}
+              <span class="search-artist-who">
+                <strong>{{ artist.display_name }}</strong>
+                <span>{{ artist.live_sticker_count }} {{ 'sticker' if artist.live_sticker_count == 1 else 'stickers' }}</span>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
     {% if stickers %}
       <div class="stickers-grid shop-grid" id="shop-grid" data-next-page="{{ next_url or '' }}">
         {% include "components/sticker_grid_items.html" %}

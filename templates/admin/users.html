@@ -1,0 +1,119 @@
+
+{% extends "base.html" %}
+
+{% block title %}User Management | StickerNest{% endblock %}
+
+{% block content %}
+
+<div class="admin-dashboard">
+
+    <header class="admin-header">
+        <span class="admin-eyebrow">STICKERNEST ADMINISTRATION</span>
+        <h1>User Management</h1>
+        <p>View and monitor registered StickerNest accounts.</p>
+    </header>
+
+    <section class="admin-overview">
+
+        <div class="user-heading">
+            <div>
+                <h2>Registered Users</h2>
+                <p>{{ users|length }} matching accounts</p>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <form method="GET"
+              action="{{ url_for('admin_users') }}"
+              class="user-filter-form">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search by name or email..."
+                value="{{ search }}"
+            >
+
+            <select name="role">
+                <option value="">All Roles</option>
+
+                <option value="customer"
+                    {% if selected_role == "customer" %}selected{% endif %}>
+                    Customers
+                </option>
+
+                <option value="artist"
+                    {% if selected_role == "artist" %}selected{% endif %}>
+                    Artists
+                </option>
+
+                <option value="admin"
+                    {% if selected_role == "admin" %}selected{% endif %}>
+                    Admins
+                </option>
+            </select>
+
+            <button type="submit">Apply Filters</button>
+
+            <a href="{{ url_for('admin_users') }}"
+               class="clear-filter">
+                Clear
+            </a>
+
+        </form>
+
+        <!-- User Table -->
+        <div class="user-table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Artist Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="role-label role-{{ user.role }}">
+                                {{ user.role|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ user.artist_status|capitalize }}</td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-users">
+                            No matching users found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a href="{{ url_for('admin_dashboard') }}"
+       class="back-dashboard">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}
+

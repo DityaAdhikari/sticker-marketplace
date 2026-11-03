@@ -62,16 +62,17 @@
         </div>
 
         <div class="form-field">
-            <label for="price">Price (Rs.)</label>
+            <label for="price">Suggested Price (Rs.)</label>
             <input
                 type="number"
                 id="price"
                 name="price"
-                value="{{ sticker.price }}"
+                value="{{ '%g'|format(sticker.review.proposed_price if sticker.review else sticker.price) }}"
                 step="0.01"
                 min="0"
                 required
             >
+            <small class="form-hint">Saving changes sends this sticker back for admin review. The admin sets the final price.</small>
         </div>
 
         <div class="form-field">

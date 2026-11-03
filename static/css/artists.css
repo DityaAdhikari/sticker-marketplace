@@ -630,3 +630,22 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
+/* Admin review status on dashboard sticker cards */
+.artist-dashboard .sticker-card > .sticker-status {
+    margin: 4px 18px 0;
+}
+
+.artist-dashboard .sticker-status .review-status i {
+    margin-right: 4px;
+}
+
+.artist-dashboard .sticker-card > .sticker-review-note {
+    margin: 8px 18px 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #F3DAD3;
+    color: #8A3F2F;
+    font-size: 12px;
+    line-height: 1.5;
+}

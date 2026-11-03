@@ -72,7 +72,7 @@
         </div>
 
         <div class="form-field">
-            <label for="price">Price (Rs.)</label>
+            <label for="price">Suggested Price (Rs.)</label>
             <input
                 type="number"
                 id="price"
@@ -82,6 +82,7 @@
                 value="{{ form.get('price', '') }}"
                 required
             >
+            <small class="form-hint">An admin reviews every sticker and sets the final price before it goes live.</small>
         </div>
 
         <div class="form-field">

@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Sticker Management | StickerNest{% endblock %}
+
+{% block content %}
+
+<div class="admin-dashboard">
+
+    <header class="admin-header">
+        <span class="admin-eyebrow">STICKERNEST ADMINISTRATION</span>
+        <h1>Sticker Management</h1>
+        <p>Review new stickers, set their prices and manage the catalogue.</p>
+    </header>
+
+    <section class="admin-overview">
+
+        <!-- Status tabs -->
+        <nav class="status-tabs">
+            {% for value, label in [("pending", "Pending Review"), ("approved", "Live"), ("rejected", "Rejected"), ("all", "All")] %}
+                <a href="{{ url_for('admin_stickers', status=value, search=search or None, category=selected_category) }}"
+                   class="status-tab {{ 'active' if selected_status == value }}">
+                    {{ label }}
+                    <span class="status-tab-count">{{ status_counts.get(value, 0) }}</span>
+                </a>
+            {% endfor %}
+        </nav>
+
+        <!-- Search and Filter -->
+        <form method="GET"
+              action="{{ url_for('admin_stickers') }}"
+              class="user-filter-form">
+
+            <input type="hidden" name="status" value="{{ selected_status }}">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search by sticker or artist name..."
+                value="{{ search }}"
+            >
+
+            <select name="category">
+                <option value="">All Categories</option>
+
+                {% for category in categories %}
+                <option value="{{ category.id }}"
+                    {% if selected_category == category.id %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Apply Filters</button>
+
+            <a href="{{ url_for('admin_stickers', status=selected_status) }}"
+               class="clear-filter">
+                Clear
+            </a>
+
+        </form>
+
+        <!-- Sticker Table -->
+        <div class="user-table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+                    <tr>
+                        <th>Sticker</th>
+                        <th>Artist</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Price (Rs.)</th>
+                        <th>Likes</th>
+                        <th>Sold</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for sticker in stickers %}
+                    {% set sold = purchase_counts.get(sticker.id, 0) %}
+                    {% set review = sticker.review %}
+                    <tr>
+                        <td>
+                            <div class="table-identity">
+                                <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+                                    <img class="activity-thumb"
+                                         src="{{ url_for('static', filename='uploads/' + sticker.image) }}"
+                                         alt="{{ sticker.name }}">
+                                </a>
+                                <div class="activity-text">
+                                    <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}">
+                                        <strong>{{ sticker.name }}</strong>
+                                    </a>
+                                    <span>#{{ sticker.id }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('artist_profile', artist_id=sticker.artist.id) }}"
+                               class="table-link">
+                                {{ sticker.artist.display_name }}
+                            </a>
+                        </td>
+                        <td>{{ sticker.category.name if sticker.category else "—" }}</td>
+                        <td>
+                            <span class="review-status review-{{ sticker.status }}">
+                                {{ {"pending": "Pending", "approved": "Live", "rejected": "Rejected"}[sticker.status] }}
+                            </span>
+                            {% if review and review.admin_note %}
+                                <span class="review-note" title="{{ review.admin_note }}">{{ review.admin_note }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sticker.is_live %}
+                                {% set price_value = sticker.price %}
+                            {% else %}
+                                {% set price_value = review.proposed_price %}
+                            {% endif %}
+
+                            <form method="POST"
+                                  action="{{ url_for('admin_approve_sticker', sticker_id=sticker.id) }}"
+                                  class="price-form">
+                                <input type="number"
+                                       name="price"
+                                       value="{{ '%g'|format(price_value) }}"
+                                       step="0.01"
+                                       min="0.01"
+                                       required
+                                       aria-label="Price for {{ sticker.name }}">
+                                <button type="submit" class="table-approve">
+                                    {{ "Update" if sticker.is_live else "Approve" }}
+                                </button>
+                            </form>
+
+                            {% if not sticker.is_live %}
+                                <span class="price-hint">Artist suggested Rs. {{ '%g'|format(review.proposed_price) }}</span>
+                            {% elif review and review.proposed_price != sticker.price %}
+                                <span class="price-hint">Artist suggested Rs. {{ '%g'|format(review.proposed_price) }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ like_counts.get(sticker.id, 0) }}</td>
+                        <td>{{ sold }}</td>
+                        <td class="table-actions">
+                            {% if sticker.status != "rejected" %}
+                                <details class="reject-box">
+                                    <summary class="table-delete">{{ "Unlist" if sticker.is_live else "Reject" }}</summary>
+                                    <form method="POST"
+                                          action="{{ url_for('admin_reject_sticker', sticker_id=sticker.id) }}">
+                                        <input type="text"
+                                               name="note"
+                                               maxlength="300"
+                                               placeholder="Reason for the artist (optional)">
+                                        <button type="submit" class="table-delete">Confirm</button>
+                                    </form>
+                                </details>
+                            {% endif %}
+
+                            {% if sold %}
+                                <span class="table-muted"
+                                      title="Purchased stickers are kept for order history.">
+                                    Locked
+                                </span>
+                            {% else %}
+                                <form method="POST"
+                                      action="{{ url_for('admin_delete_sticker', sticker_id=sticker.id) }}"
+                                      data-confirm="Delete &quot;{{ sticker.name }}&quot;? This cannot be undone."
+                                      onsubmit="return confirm(this.dataset.confirm);">
+                                    <button type="submit" class="table-delete">Delete</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-users">
+                            {% if selected_status == "pending" %}
+                                No stickers waiting for review.
+                            {% else %}
+                                No matching stickers found.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a href="{{ url_for('admin_dashboard') }}"
+       class="back-dashboard">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}

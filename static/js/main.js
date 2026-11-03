@@ -548,3 +548,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const tabButtons = document.querySelectorAll(".settings-link");
+    const sections = document.querySelectorAll(".settings-content section");
+
+    tabButtons.forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const selectedTab = this.dataset.tab;
+
+            // Remove previous active states
+            tabButtons.forEach(btn => btn.classList.remove("active"));
+            sections.forEach(section => {
+                section.classList.remove("active-section");
+            });
+
+            // Activate selected tab
+            this.classList.add("active");
+
+            const selectedSection = document.getElementById(selectedTab);
+
+            if (selectedSection) {
+                selectedSection.classList.add("active-section");
+            }
+
+            // Keep the tab in the URL so a refresh stays on it
+            const url = new URL(window.location);
+            url.searchParams.set("tab", selectedTab);
+            history.replaceState(null, "", url);
+
+        });
+
+    });
+
+});

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - StickerNest{% endblock %}
+
+{% block content %}
+
+<div class="settings-page">
+
+    <div class="settings-header">
+        <h1>Settings</h1>
+        <p>Manage your account, notifications and privacy.</p>
+    </div>
+
+    <div class="settings-layout">
+
+        <aside class="settings-sidebar">
+
+            <button type="button" class="settings-link {{ 'active' if active_tab == 'profile' }}" data-tab="profile">
+                <i class="fa-solid fa-user"></i>
+                Profile
+            </button>
+
+            <button type="button" class="settings-link {{ 'active' if active_tab == 'notifications' }}" data-tab="notifications">
+                <i class="fa-solid fa-bell"></i>
+                Notifications
+            </button>
+
+            <button type="button" class="settings-link {{ 'active' if active_tab == 'security' }}" data-tab="security">
+                <i class="fa-solid fa-lock"></i>
+                Security
+            </button>
+
+            <button type="button" class="settings-link {{ 'active' if active_tab == 'privacy' }}" data-tab="privacy">
+                <i class="fa-solid fa-shield-halved"></i>
+                Privacy
+            </button>
+
+        </aside>
+
+        <main class="settings-content">
+
+            <section id="profile" class="{{ 'active-section' if active_tab == 'profile' }}">
+                <h2>Profile Information</h2>
+                <p>Update your personal information.</p>
+
+                <form method="POST"
+                      action="{{ url_for('edit_profile') }}"
+                      enctype="multipart/form-data">
+
+                    <input type="hidden" name="next" value="settings">
+
+                    <label for="profile-name">Name</label>
+                    <input type="text"
+                           id="profile-name"
+                           name="name"
+                           value="{{ user.name }}"
+                           required>
+
+                    <label for="profile-bio">Bio</label>
+                    <textarea id="profile-bio" name="bio">{{ user.bio or "" }}</textarea>
+
+                    <label for="profile-location">Location</label>
+                    <input type="text"
+                           id="profile-location"
+                           name="location"
+                           value="{{ user.location or "" }}">
+
+                    <label for="profile-image">Profile Picture</label>
+                    <input type="file"
+                           id="profile-image"
+                           name="profile_image"
+                           accept="image/png,image/jpeg,image/jpg">
+
+                    <button type="submit">Save Changes</button>
+
+                </form>
+            </section>
+
+            <section id="notifications" class="{{ 'active-section' if active_tab == 'notifications' }}">
+                <h2>Notifications</h2>
+                <p>Choose which notifications you want to receive.</p>
+
+                <form class="notification-form" method="POST" action="{{ url_for('save_notification_preferences') }}">
+
+                    <label>
+                        <input type="checkbox" name="new_followers"
+                        {% if notification_preferences.new_followers %}checked{% endif %}>
+                        New followers
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="sticker_likes"
+                        {% if notification_preferences.sticker_likes %}checked{% endif %}>
+                        Likes on my stickers
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="order_updates"
+                        {% if notification_preferences.order_updates %}checked{% endif %}>
+                        Order updates
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="followed_artist_updates"
+                        {% if notification_preferences.followed_artist_updates %}checked{% endif %}>
+                        New products from followed artists
+                    </label>
+
+                    <label>
+                        <input type="checkbox" name="stickernest_announcements"
+                        {% if notification_preferences.stickernest_announcements %}checked{% endif %}>
+                        StickerNest announcements
+                    </label>
+
+                    <button type="submit">Save Preferences</button>
+
+                </form>
+            </section>
+
+            <section id="security" class="{{ 'active-section' if active_tab == 'security' }}">
+                <h2>Security</h2>
+                <p>Keep your account safe.</p>
+
+                <div class="settings-block">
+                    <h3>Change Password</h3>
+
+                    <form method="POST" action="{{ url_for('change_password') }}">
+
+                        <label for="current-password">Current Password</label>
+                        <input type="password"
+                               id="current-password"
+                               name="current_password"
+                               autocomplete="current-password"
+                               required>
+
+                        <label for="new-password">New Password</label>
+                        <input type="password"
+                               id="new-password"
+                               name="new_password"
+                               autocomplete="new-password"
+                               minlength="{{ min_password_length }}"
+                               required>
+                        <span class="settings-hint">At least {{ min_password_length }} characters.</span>
+
+                        <label for="confirm-password">Confirm New Password</label>
+                        <input type="password"
+                               id="confirm-password"
+                               name="confirm_password"
+                               autocomplete="new-password"
+                               minlength="{{ min_password_length }}"
+                               required>
+
+                        <button type="submit">Update Password</button>
+
+                    </form>
+                </div>
+
+                <div class="settings-block">
+                    <h3>Email Address</h3>
+
+                    {% if is_admin_email %}
+                        <p class="settings-hint">
+                            You're signed in as <strong>{{ user.email }}</strong>.
+                            The administrator email can't be changed here.
+                        </p>
+                    {% else %}
+                        <p class="settings-hint">
+                            Currently <strong>{{ user.email }}</strong>. You'll use the new address to log in.
+                        </p>
+
+                        <form method="POST" action="{{ url_for('change_email') }}">
+
+                            <label for="new-email">New Email</label>
+                            <input type="email"
+                                   id="new-email"
+                                   name="email"
+                                   autocomplete="email"
+                                   required>
+
+                            <label for="email-password">Current Password</label>
+                            <input type="password"
+                                   id="email-password"
+                                   name="current_password"
+                                   autocomplete="current-password"
+                                   required>
+
+                            <button type="submit">Update Email</button>
+
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="settings-block">
+                    <h3>Session</h3>
+                    <p class="settings-hint">Log out of StickerNest on this device.</p>
+
+                    <a href="{{ url_for('logout') }}" class="settings-secondary-btn">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        Log Out
+                    </a>
+                </div>
+            </section>
+
+            <section id="privacy" class="{{ 'active-section' if active_tab == 'privacy' }}">
+                <h2>Privacy</h2>
+                <p>Control what others can see and get a copy of your data.</p>
+
+                <div class="settings-block">
+                    <h3>Public Profile</h3>
+
+                    <form class="notification-form" method="POST" action="{{ url_for('save_privacy_preferences') }}">
+
+                        <label>
+                            <input type="checkbox" name="show_location"
+                            {% if not privacy_preferences or privacy_preferences.show_location %}checked{% endif %}>
+                            Show my location on my public artist page
+                        </label>
+
+                        <button type="submit">Save Privacy Settings</button>
+
+                    </form>
+                </div>
+
+                <div class="settings-block">
+                    <h3>Your Data</h3>
+                    <p class="settings-hint">
+                        Download your account details, wishlist, purchases, followed artists
+                        and preferences as a JSON file.
+                    </p>
+
+                    <a href="{{ url_for('export_account_data') }}" class="settings-secondary-btn">
+                        <i class="fa-solid fa-download"></i>
+                        Download My Data
+                    </a>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+</div>
+
+{% endblock %}

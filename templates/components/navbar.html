@@ -96,9 +96,16 @@
             {% endif %}
 
             {% if nav_user.role == "admin" %}
-              <a href="{{ url_for('artist_requests') }}"
-                 class="{{ 'active' if request.endpoint == 'artist_requests' }}">
-                <i class="fa-solid fa-user-check"></i> Artist Requests
+              <a href="{{ url_for('admin_dashboard') }}"
+                 class="{{ 'active' if request.endpoint == 'admin_dashboard' }}">
+                <i class="fa-solid fa-user-check"></i> Admin Dashboard
+              </a>
+            {% endif %}
+
+            {% if nav_user %}
+             <a href="{{ url_for('settings') }}"
+               class="{{ 'active' if request.endpoint == 'settings' }}">
+              <i class="fa-solid fa-gear"></i> Settings
               </a>
             {% endif %}
 

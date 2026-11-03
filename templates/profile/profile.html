@@ -36,105 +36,35 @@
 
         <div class="profile-info">
 
-            <h1>{{ user.name }}</h1>
+            <div class="profile-name-row">
+                <h1>{{ user.name }}</h1>
+                <span class="profile-role profile-role-{{ user.role }}">
+                    {{ {'artist': 'Artist', 'admin': 'Admin'}.get(user.role, 'Member') }}
+                </span>
+            </div>
 
-            <p class="username">@{{ user.name }}</p>
+            <p class="username">
+                {% if user.artist and user.artist.handle %}
+                    {{ user.artist.handle if user.artist.handle.startswith('@') else '@' + user.artist.handle }}
+                {% else %}
+                    @{{ user.name|lower|replace(' ', '') }}
+                {% endif %}
+            </p>
 
-            {% if user.bio %}
-
-                <p class="bio">
-                    {{ user.bio }}
-                </p>
-
-            {% else %}
-
-                <p class="bio">
-                    No bio yet.
-                </p>
-
-            {% endif %}
-
+            <p class="bio">{{ user.bio or "No bio yet." }}</p>
 
             {% if user.location %}
-
                 <p class="location">
-                    📍 {{ user.location }}
+                    <i class="fa-solid fa-location-dot"></i>
+                    {{ user.location }}
                 </p>
-
             {% endif %}
 
-
             <div class="profile-actions">
-
-                <a
-                    href="{{ url_for('edit_profile') }}"
-                    class="edit-profile-btn"
-                >
-                    Edit Profile
-                </a>
-
-
-                <a
-                    href="{{ url_for('studio_api.studio') }}"
-                    class="artist-btn"
-                >
+                <a href="{{ url_for('studio_api.studio') }}" class="artist-btn primary">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     Customize Your Sticker
                 </a>
-
-
-                {% if user.role == "admin" %}
-
-                    <a
-                        href="{{ url_for('artist_requests') }}"
-                        class="artist-btn"
-                    >
-                        Artist Requests
-                    </a>
-
-                {% endif %}
-
-
-                {% if user.role == "artist" %}
-
-                    <a
-                        href="{{ url_for('artist_dashboard') }}"
-                        class="artist-btn"
-                    >
-                        Artist Dashboard
-                    </a>
-
-                {% endif %}
-
-
-                {% if user.role == "customer" and user.artist_status == "none" %}
-
-                    <form
-                        method="POST"
-                        action="{{ url_for('apply_artist') }}"
-                    >
-
-                        <button
-                            type="submit"
-                            class="artist-btn"
-                        >
-                            Apply to Become an Artist
-                        </button>
-
-                    </form>
-
-                {% elif user.artist_status == "pending" %}
-
-                    <button
-                        type="button"
-                        class="artist-btn"
-                        disabled
-                    >
-                        Artist Application Pending
-                    </button>
-
-                {% endif %}
-
             </div>
 
         </div>
@@ -155,10 +85,12 @@
             <span class="stat-label">Purchased</span>
         </div>
 
+        {% if user.role == "artist" %}
         <div class="stat-card">
             <span class="stat-number">{{ created_count }}</span>
             <span class="stat-label">Created</span>
         </div>
+        {% endif %}
 
         <a href="#following" class="stat-card stat-link">
             <span class="stat-number" id="following-count">{{ following_count }}</span>
@@ -178,9 +110,11 @@
             Purchased
         </a>
 
+        {% if user.role == "artist" %}
         <a href="#created" class="profile-tab">
             Created
         </a>
+        {% endif %}
 
         <a href="#following" class="profile-tab">
             Following
@@ -253,6 +187,7 @@
     </section>
 
 
+    {% if user.role == "artist" %}
     <section class="profile-section" id="created">
         <div class="section-heading">
             <h2>Created Stickers</h2>
@@ -284,21 +219,16 @@
                     </div>
                 {% endfor %}
             </div>
-        {% elif user.role == "artist" %}
+        {% else %}
             <div class="empty-profile">
                 <div class="empty-icon">✦</div>
                 <h3>No created stickers yet</h3>
                 <p>Customize a sticker in the Studio, or upload one from your Artist Dashboard.</p>
                 <a href="{{ url_for('studio_api.studio') }}">Customize Your Sticker</a>
             </div>
-        {% else %}
-            <div class="empty-profile">
-                <div class="empty-icon">✦</div>
-                <h3>No created stickers yet</h3>
-                <p>Become an artist to publish your own stickers.</p>
-            </div>
         {% endif %}
     </section>
+    {% endif %}
 
 
     <section class="profile-section" id="following">
@@ -319,7 +249,7 @@
                         {% endif %}
                         <span class="following-who">
                             <strong>{{ artist.display_name }}</strong>
-                            <span>{{ artist.handle or '' }}{{ ' · ' if artist.handle }}{{ artist.stickers|length }} {{ 'sticker' if artist.stickers|length == 1 else 'stickers' }}</span>
+                            <span>{{ artist.handle or '' }}{{ ' · ' if artist.handle }}{{ artist.live_sticker_count }} {{ 'sticker' if artist.live_sticker_count == 1 else 'stickers' }}</span>
                         </span>
                     </a>
                     <form method="POST" action="{{ url_for('toggle_follow', artist_id=artist.id) }}"

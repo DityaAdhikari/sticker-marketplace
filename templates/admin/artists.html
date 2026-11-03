@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Artist Management | StickerNest{% endblock %}
+
+{% block content %}
+
+<div class="admin-dashboard">
+
+    <header class="admin-header">
+        <span class="admin-eyebrow">STICKERNEST ADMINISTRATION</span>
+        <h1>Artist Management</h1>
+        <p>Monitor the creators selling on StickerNest.</p>
+    </header>
+
+    <section class="admin-overview">
+
+        <div class="user-heading">
+            <div>
+                <h2>Marketplace Artists</h2>
+                <p>{{ artists|length }} matching artists</p>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <form method="GET"
+              action="{{ url_for('admin_artists') }}"
+              class="user-filter-form">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search by artist, handle or email..."
+                value="{{ search }}"
+            >
+
+            <button type="submit">Search</button>
+
+            <a href="{{ url_for('admin_artists') }}"
+               class="clear-filter">
+                Clear
+            </a>
+
+        </form>
+
+        <!-- Artist Table -->
+        <div class="user-table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Artist</th>
+                        <th>Account</th>
+                        <th>Stickers</th>
+                        <th>Followers</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for artist in artists %}
+                    <tr>
+                        <td>{{ artist.id }}</td>
+                        <td>
+                            <div class="table-identity">
+                                {% if artist.profile_image %}
+                                    <img class="activity-avatar"
+                                         src="{{ url_for('static', filename='uploads/' + artist.profile_image) }}"
+                                         alt="">
+                                {% else %}
+                                    <span class="activity-avatar">{{ artist.display_name[0]|upper }}</span>
+                                {% endif %}
+                                <div class="activity-text">
+                                    <strong>{{ artist.display_name }}</strong>
+                                    {% if artist.handle %}
+                                        <span>{{ artist.handle }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if artist.user %}
+                                {{ artist.user.email }}
+                            {% else %}
+                                <span class="role-label">No account</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ sticker_counts.get(artist.id, 0) }}</td>
+                        <td>{{ follower_counts.get(artist.id, 0) }}</td>
+                        <td class="table-actions">
+                            <a href="{{ url_for('artist_profile', artist_id=artist.id) }}"
+                               class="table-link">
+                                View profile
+                            </a>
+                            <a href="{{ url_for('admin_stickers', search=artist.name) }}"
+                               class="table-link">
+                                Stickers
+                            </a>
+                        </td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-users">
+                            No matching artists found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a href="{{ url_for('admin_dashboard') }}"
+       class="back-dashboard">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}

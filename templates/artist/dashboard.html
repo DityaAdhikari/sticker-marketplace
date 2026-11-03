@@ -26,10 +26,18 @@
         </div>
     </div>
 
+    {% set live_count = stickers|selectattr("is_live")|list|length %}
+    {% set pending_count = stickers|selectattr("status", "equalto", "pending")|list|length %}
+
     <section class="profile-stats">
         <div class="stat-card">
-            <span class="stat-number">{{ stickers|length }}</span>
-            <span class="stat-label">Stickers</span>
+            <span class="stat-number">{{ live_count }}</span>
+            <span class="stat-label">Live</span>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-number">{{ pending_count }}</span>
+            <span class="stat-label">In Review</span>
         </div>
 
         <div class="stat-card">
@@ -49,8 +57,37 @@
 
                     <h3>{{ sticker.name }}</h3>
 
+                    <p class="sticker-status">
+                        {% if sticker.status == "pending" %}
+                            <span class="review-status review-pending">
+                                <i class="fa-solid fa-hourglass-half"></i> In review
+                            </span>
+                        {% elif sticker.status == "rejected" %}
+                            <span class="review-status review-rejected">
+                                <i class="fa-solid fa-circle-xmark"></i> Rejected
+                            </span>
+                        {% else %}
+                            <span class="review-status review-approved">
+                                <i class="fa-solid fa-circle-check"></i> Live
+                            </span>
+                        {% endif %}
+                    </p>
+
+                    {% if sticker.status == "rejected" %}
+                        <p class="sticker-review-note">
+                            {{ sticker.review.admin_note or "No reason given." }}
+                            Edit the sticker to resubmit it.
+                        </p>
+                    {% endif %}
+
                     <p class="sticker-meta">
-                        <span>Rs. {{ sticker.price|int }}</span>
+                        {% if sticker.is_live %}
+                            <span>Rs. {{ sticker.price|int }}</span>
+                        {% else %}
+                            <span title="Your suggested price; the admin sets the final price">
+                                Suggested Rs. {{ sticker.review.proposed_price|int }}
+                            </span>
+                        {% endif %}
                         <span><i class="fa-solid fa-heart"></i> {{ like_count }}</span>
                     </p>
 
