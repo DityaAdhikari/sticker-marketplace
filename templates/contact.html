@@ -19,15 +19,15 @@
       <form class="contact-form" action="{{ url_for('contact') }}" method="POST">
         <div class="form-group">
           <label for="name">Name</label>
-          <input type="text" id="name" name="name" placeholder="Your name" required>
+          <input type="text" id="name" name="name" placeholder="Your name" value="{{ form.get('name', '') }}" required>
         </div>
         <div class="form-group">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+          <input type="email" id="email" name="email" placeholder="you@example.com" value="{{ form.get('email', '') }}" required>
         </div>
         <div class="form-group">
           <label for="message">Message</label>
-          <textarea id="message" name="message" rows="6" placeholder="Write your message here..." required></textarea>
+          <textarea id="message" name="message" rows="6" placeholder="Write your message here..." required>{{ form.get('message', '') }}</textarea>
         </div>
         <button type="submit" class="auth-submit-btn">Send Message</button>
       </form>
@@ -35,7 +35,7 @@
       <div class="contact-info">
         <div class="info-item">
           <h3>Email</h3>
-          <p>hello@stickernest.com</p>
+          <p><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
         </div>
         <div class="info-item">
           <h3>Location</h3>

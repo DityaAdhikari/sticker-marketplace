@@ -136,9 +136,9 @@
                             </form>
 
                             {% if not sticker.is_live %}
-                                <span class="price-hint">Artist suggested Rs. {{ '%g'|format(review.proposed_price) }}</span>
+                                <span class="price-hint">Artist suggested {{ review.proposed_price|rupees }}</span>
                             {% elif review and review.proposed_price != sticker.price %}
-                                <span class="price-hint">Artist suggested Rs. {{ '%g'|format(review.proposed_price) }}</span>
+                                <span class="price-hint">Artist suggested {{ review.proposed_price|rupees }}</span>
                             {% endif %}
                         </td>
                         <td>{{ like_counts.get(sticker.id, 0) }}</td>

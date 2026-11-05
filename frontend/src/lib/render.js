@@ -1,21 +1,51 @@
-// Canvas rendering for stickers and the A5 sheet.
-// All sticker geometry is stored in "page units": the sheet is 500 × 710
-// units, which maps to 148 × 210 mm. Effects are stored in millimetres.
-
-export const PAGE = {
-  widthMm: 148,
-  heightMm: 210,
-  width: 500,
-  height: 710,
-  exportWidth: 1748,
-  exportHeight: 2480,
-}
+// Canvas rendering for stickers and the sheet.
+// All sticker geometry is stored in "page units". One millimetre is always
+// the same number of units (an A5 page is 500 units wide), so stickers keep
+// their printed size when the paper size or orientation changes. Effects
+// are stored in millimetres.
 
 // Page units per millimetre.
-export const MM = PAGE.width / PAGE.widthMm
+export const MM = 500 / 148
 
+export const EXPORT_DPI = 300
 export const PREVIEW_SCALE = 1.5
-export const EXPORT_SCALE = PAGE.exportWidth / PAGE.width
+// Pixels per page unit at 300 DPI.
+export const EXPORT_SCALE = EXPORT_DPI / 25.4 / MM
+
+export const SAFE_MARGIN_MM = 5
+export const STICKER_SPACING_MM = 2.5
+export const BLEED_MM = 3
+
+// Portrait sizes in millimetres.
+export const PAPER_SIZES = {
+  A4: { widthMm: 210, heightMm: 297 },
+  A5: { widthMm: 148, heightMm: 210 },
+  A6: { widthMm: 105, heightMm: 148 },
+}
+
+const mmToPx = (mm, dpi = EXPORT_DPI) => Math.round((mm / 25.4) * dpi)
+
+// Page geometry for a sheet's paper size and orientation. Export sizes
+// include the optional bleed on every side.
+export function getPage({ size = 'A5', orientation = 'portrait', bleed = false } = {}) {
+  const paper = PAPER_SIZES[size] ?? PAPER_SIZES.A5
+  const landscape = orientation === 'landscape'
+  const widthMm = landscape ? paper.heightMm : paper.widthMm
+  const heightMm = landscape ? paper.widthMm : paper.heightMm
+  const bleedMm = bleed ? BLEED_MM : 0
+
+  return {
+    size: PAPER_SIZES[size] ? size : 'A5',
+    orientation: landscape ? 'landscape' : 'portrait',
+    widthMm,
+    heightMm,
+    width: widthMm * MM,
+    height: heightMm * MM,
+    bleedMm,
+    exportWidth: mmToPx(widthMm + 2 * bleedMm),
+    exportHeight: mmToPx(heightMm + 2 * bleedMm),
+  }
+}
 
 export const TEXT_FONTS = [
   'Outfit',
@@ -249,15 +279,25 @@ export function createSpriteCache() {
   }
 }
 
+// Draw the sheet. With a bleed the canvas covers the page plus the bleed
+// on every side: the background fills it all and the stickers are offset.
 export function drawPage(
   canvas,
   items,
-  { activeId = null, guides = false, background = '#ffffff', spriteCache } = {},
+  {
+    page,
+    bleedMm = 0,
+    activeId = null,
+    guides = false,
+    background = '#ffffff',
+    spriteCache,
+  },
 ) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
-  const scale = canvas.width / PAGE.width
+  const bleed = bleedMm * MM
+  const scale = canvas.width / (page.width + 2 * bleed)
   ctx.setTransform(1, 0, 0, 1, 0, 0)
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
@@ -266,13 +306,21 @@ export function drawPage(
     ctx.fillRect(0, 0, canvas.width, canvas.height)
   }
 
-  // Page-safe-area guide; it is not part of the export.
+  ctx.translate(bleed * scale, bleed * scale)
+
+  // Safe-area guide; it is not part of the export.
   if (guides) {
+    const margin = SAFE_MARGIN_MM * MM
     ctx.save()
     ctx.strokeStyle = '#E4D8CB'
     ctx.lineWidth = scale
     ctx.setLineDash([4 * scale, 4 * scale])
-    ctx.strokeRect(18 * scale, 18 * scale, (PAGE.width - 36) * scale, (PAGE.height - 36) * scale)
+    ctx.strokeRect(
+      margin * scale,
+      margin * scale,
+      (page.width - 2 * margin) * scale,
+      (page.height - 2 * margin) * scale,
+    )
     ctx.restore()
   }
 

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Redirecting to eSewa - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<main class="checkout-page">
+
+    {# eSewa needs a browser form POST; this sends it automatically #}
+    <form method="POST" action="{{ form_url }}" id="esewa-form" class="redirect-card">
+        {% for name, value in fields.items() %}
+            <input type="hidden" name="{{ name }}" value="{{ value }}">
+        {% endfor %}
+
+        <span class="redirect-spinner" aria-hidden="true"></span>
+        <h1>Taking you to eSewa…</h1>
+        <p>Order #{{ order.id }} · {{ order.total_paisa|paisa }}</p>
+
+        <button type="submit" class="checkout-btn">Continue to eSewa</button>
+    </form>
+
+</main>
+
+<script>
+    document.getElementById("esewa-form").submit();
+</script>
+
+{% endblock %}

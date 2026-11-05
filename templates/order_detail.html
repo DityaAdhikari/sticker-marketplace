@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set method_name = 'eSewa' if order.payment_method == 'esewa' else 'Khalti' %}
+
+<main class="checkout-page">
+
+    <!-- Confirmation banner -->
+    {% if order.status == "paid" %}
+        <section class="order-banner order-banner-paid">
+            <i class="fa-solid fa-circle-check"></i>
+            <div>
+                <h1>Thank you! Your order is confirmed.</h1>
+                <p>We received {{ order.total_paisa|paisa }} via {{ method_name }}.</p>
+            </div>
+        </section>
+    {% elif order.status == "failed" %}
+        <section class="order-banner order-banner-failed">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <div>
+                <h1>Payment didn't go through</h1>
+                <p>{{ order.failure_reason or "The payment was not completed." }} You haven't been charged for this order.</p>
+                <a href="{{ url_for('payments.checkout') }}" class="checkout-btn">Try again</a>
+            </div>
+        </section>
+    {% else %}
+        <section class="order-banner order-banner-pending">
+            <i class="fa-solid fa-hourglass-half"></i>
+            <div>
+                <h1>Waiting for payment confirmation</h1>
+                <p>We haven't had confirmation from {{ method_name }} yet.</p>
+                <form method="POST" action="{{ url_for('payments.verify_order_status', order_id=order.id) }}">
+                    <button type="submit" class="checkout-btn">Check payment status</button>
+                </form>
+            </div>
+        </section>
+    {% endif %}
+
+    <div class="checkout-layout">
+
+        <section class="checkout-panel">
+            <h2>Order #{{ order.id }}</h2>
+
+            <ul class="checkout-items">
+                {% for item in order.items %}
+                <li>
+                    {% if item.sticker_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + item.sticker_image) }}" alt="">
+                    {% endif %}
+                    <span class="checkout-item-name">
+                        {% if item.sticker and item.sticker.is_live %}
+                            <a href="{{ url_for('sticker_detail', sticker_id=item.sticker_id) }}">{{ item.sticker_name }}</a>
+                        {% else %}
+                            {{ item.sticker_name }}
+                        {% endif %}
+                        <small>{{ item.unit_price_paisa|paisa }} × {{ item.quantity }}</small>
+                    </span>
+                    <strong>{{ item.line_total|rupees }}</strong>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <aside class="checkout-summary">
+            <h2>Details</h2>
+
+            <div class="summary-row">
+                <span>Status</span>
+                <span class="order-status order-{{ order.status }}">
+                    {{ {'paid': 'Paid', 'pending': 'Awaiting payment', 'failed': 'Failed'}[order.status] }}
+                </span>
+            </div>
+            <div class="summary-row">
+                <span>Placed</span>
+                <span>{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Payment</span>
+                <span>{{ method_name }}</span>
+            </div>
+            {% if order.transaction_id %}
+                <div class="summary-row">
+                    <span>Transaction</span>
+                    <span class="summary-code">{{ order.transaction_id }}</span>
+                </div>
+            {% endif %}
+            <div class="summary-row summary-total">
+                <span>Total</span>
+                <span>{{ order.total_paisa|paisa }}</span>
+            </div>
+
+            <a href="{{ url_for('payments.orders') }}" class="checkout-link">← All orders</a>
+        </aside>
+
+    </div>
+
+</main>
+
+{% endblock %}

@@ -70,7 +70,7 @@
             </p>
 
             <div class="pd-price-row">
-                <p class="pd-price">Rs. {{ sticker.price | int }}</p>
+                <p class="pd-price">{{ sticker.price|rupees }}</p>
 
                 <form method="POST" action="{{ url_for('toggle_wishlist', sticker_id=sticker.id) }}"
                       class="pc-like-form" data-sticker-id="{{ sticker.id }}">
@@ -113,18 +113,23 @@
                 </dl>
             </div>
 
-            <!-- Purchase actions on one line; cart and checkout aren't built yet -->
-            <div class="pd-actions">
-                <button type="button" class="pd-btn pd-btn-cart" data-checkout-soon>
-                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
-                </button>
-                <button type="button" class="pd-btn pd-btn-buy" data-checkout-soon>
-                    Buy Now
-                </button>
-            </div>
-            <p class="pd-checkout-note" id="pd-checkout-note" role="status" hidden>
-                Cart and checkout are coming soon. Tap the heart to save this sticker to your wishlist for now.
-            </p>
+            <!-- Purchase actions on one line -->
+            {% if not sticker.is_live %}
+                <p class="pd-checkout-note">This sticker can be bought once it's approved.</p>
+            {% elif nav_user and sticker.artist.user_id == nav_user.id %}
+                <p class="pd-checkout-note">This is your sticker, so you can't buy it.</p>
+            {% else %}
+                <form method="POST" action="{{ url_for('payments.add_to_cart', sticker_id=sticker.id) }}" class="pd-actions">
+                    <button type="submit" class="pd-btn pd-btn-cart">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
+                    <button type="submit" class="pd-btn pd-btn-buy"
+                            formaction="{{ url_for('payments.checkout') }}" formmethod="get"
+                            name="buy" value="{{ sticker.id }}">
+                        Buy Now
+                    </button>
+                </form>
+            {% endif %}
         </div>
     </section>
 

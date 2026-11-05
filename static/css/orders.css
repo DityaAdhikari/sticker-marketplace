@@ -1,0 +1,707 @@
+/* =====================================
+   CART, CHECKOUT AND ORDERS
+===================================== */
+
+.checkout-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 30px 60px;
+    color: var(--text);
+}
+
+.checkout-header {
+    margin-bottom: 28px;
+}
+
+.checkout-header h1 {
+    margin: 0 0 6px;
+    font-size: 34px;
+}
+
+.checkout-header p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.checkout-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 28px;
+    align-items: start;
+}
+
+.checkout-panel,
+.checkout-summary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.checkout-summary {
+    position: sticky;
+    top: 110px;
+}
+
+.checkout-panel h2,
+.checkout-summary h2 {
+    margin: 0 0 16px;
+    font-size: 19px;
+}
+
+/* Cart rows */
+
+.cart-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cart-row {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr) auto auto auto;
+    align-items: center;
+    gap: 18px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.cart-thumb img {
+    display: block;
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.cart-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.cart-name {
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cart-name:hover {
+    color: var(--accent-text);
+}
+
+.cart-artist,
+.cart-unit {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.cart-qty {
+    margin: 0;
+}
+
+.cart-qty input {
+    width: 64px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+}
+
+.cart-line-total {
+    min-width: 80px;
+    text-align: right;
+    font-weight: 700;
+}
+
+.cart-row form {
+    margin: 0;
+}
+
+.cart-remove {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.cart-remove:hover {
+    background: var(--surface-alt);
+    color: #A94F3B;
+}
+
+/* Summary */
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.summary-total {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.summary-code {
+    font-family: monospace;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
+.checkout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--text);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.checkout-btn:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+}
+
+.checkout-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    color: var(--accent-text);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.checkout-note {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Checkout items */
+
+.checkout-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.checkout-items li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.checkout-items li:last-child {
+    border-bottom: none;
+}
+
+.checkout-items img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.checkout-item-name {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.checkout-item-name a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.checkout-item-name small {
+    color: var(--muted);
+    font-weight: 400;
+}
+
+/* Payment options */
+
+.pay-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pay-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.pay-option:has(input:checked) {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201, 143, 112, 0.18);
+}
+
+.pay-option.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.pay-option input {
+    accent-color: var(--accent);
+}
+
+.pay-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 34px;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.pay-logo-khalti {
+    background: #5C2D91;
+}
+
+.pay-logo-esewa {
+    background: #60BB46;
+}
+
+.pay-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.pay-text small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* eSewa redirect */
+
+.redirect-card {
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 36px;
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.redirect-card h1 {
+    margin: 18px 0 6px;
+    font-size: 22px;
+}
+
+.redirect-card p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.redirect-spinner {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: redirect-spin 0.8s linear infinite;
+}
+
+@keyframes redirect-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Order history */
+
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.order-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.order-row:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.order-thumbs {
+    display: flex;
+    width: 96px;
+}
+
+.order-thumbs img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border: 2px solid var(--card);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.order-thumbs img + img {
+    margin-left: -24px;
+}
+
+.order-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.order-info span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.order-total {
+    font-weight: 700;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.order-paid {
+    background: #E5E8D9;
+    color: #596344;
+}
+
+.order-pending {
+    background: #F6E7D8;
+    color: #9A5B33;
+}
+
+.order-failed {
+    background: #F3DAD3;
+    color: #A94F3B;
+}
+
+/* Confirmation banner */
+
+.order-banner {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid transparent;
+}
+
+.order-banner > i {
+    font-size: 30px;
+    margin-top: 2px;
+}
+
+.order-banner h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+}
+
+.order-banner p {
+    margin: 0;
+}
+
+.order-banner .checkout-btn {
+    width: auto;
+    display: inline-flex;
+}
+
+.order-banner form {
+    margin: 0;
+}
+
+.order-banner-paid {
+    background: #EEF1E4;
+    border-color: #CBD3B4;
+    color: #4A5532;
+}
+
+.order-banner-pending {
+    background: #F6E7D8;
+    border-color: #E2BFA2;
+    color: #7A4A2B;
+}
+
+.order-banner-failed {
+    background: #F7E3DD;
+    border-color: #E5B8AB;
+    color: #8A3F2F;
+}
+
+/* Responsive */
+
+@media (max-width: 850px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-summary {
+        position: static;
+    }
+}
+
+@media (max-width: 600px) {
+    .checkout-page {
+        padding: 24px 16px 40px;
+    }
+
+    .checkout-header h1 {
+        font-size: 27px;
+    }
+
+    .cart-row {
+        grid-template-columns: 64px minmax(0, 1fr) auto;
+        gap: 12px;
+    }
+
+    .cart-thumb img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .cart-row .cart-qty {
+        grid-column: 2;
+    }
+
+    .cart-line-total {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .order-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .order-thumbs {
+        display: none;
+    }
+
+    .order-banner {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* =====================================
+   ADMIN ORDER MANAGEMENT
+===================================== */
+
+/* Reconcile alert is a form, so its call-to-action is a real button */
+.reconcile-alert button.review-alert-cta {
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.date-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.user-filter-form .date-filter input {
+    flex: none;
+    min-width: 0;
+}
+
+.order-link {
+    color: var(--accent-text);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.order-link:hover {
+    text-decoration: underline;
+}
+
+.table-primary {
+    display: block;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.table-secondary {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.method-label {
+    display: inline-block;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.method-khalti {
+    background: #E6DDEE;
+    color: #5C2D91;
+}
+
+.method-esewa {
+    background: #DFEDD9;
+    color: #3F7A2C;
+}
+
+.user-table td.summary-code {
+    text-align: left;
+}
+
+.admin-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 22px;
+}
+
+.admin-pagination a,
+.admin-pagination span {
+    min-width: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #F8F4ED;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.admin-pagination a:hover {
+    border-color: #C98F70;
+    color: var(--text);
+}
+
+.admin-pagination .page-current {
+    background: #C98F70;
+    border-color: #C98F70;
+    color: var(--text);
+}
+
+.admin-pagination .page-gap {
+    border-color: transparent;
+    background: none;
+}
+
+/* Order detail */
+
+.admin-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.admin-order-header .checkout-btn {
+    width: auto;
+    margin-top: 0;
+}
+
+.admin-order-main,
+.admin-order-side {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-width: 0;
+}
+
+/* Two panels in the side column, so neither can stick */
+.admin-order-side .checkout-summary {
+    position: static;
+}
+
+.admin-order-main .user-table-wrapper {
+    margin-top: 0;
+}
+
+.check-note {
+    min-width: 180px;
+    white-space: normal !important;
+    font-size: 13px !important;
+}
+
+@media (max-width: 600px) {
+    .date-filter {
+        justify-content: space-between;
+    }
+
+    .admin-order-header .checkout-btn {
+        width: 100%;
+    }
+}

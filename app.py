@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 import os
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response, abort
-from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase, StickerPhoto, StickerSpec, Follow, NotificationPreference, PrivacyPreference, StickerReview
+from models import db, User, Sticker, Artist, Category, Wishlist ,Purchase, StickerPhoto, StickerSpec, Follow, NotificationPreference, PrivacyPreference, StickerReview, CartItem
 from studio_api import studio_api, studio_asset_exists, claim_studio_asset, save_upload, remove_upload
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,12 +14,22 @@ from dotenv import load_dotenv
 import secrets
 
 import uuid
+import smtplib
+from email.message import EmailMessage
 from datetime import datetime
 
 load_dotenv()
 
+# Reads payment keys from the environment, so import after load_dotenv()
+from payments import payments
+from currency import format_rupees, format_paisa
+
 
 app = Flask(__name__)
+
+# {{ sticker.price|rupees }} and {{ order.total_paisa|paisa }} -> "Rs. 1,249.50"
+app.add_template_filter(format_rupees, "rupees")
+app.add_template_filter(format_paisa, "paisa")
 
 
 def load_secret_key():
@@ -65,6 +75,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 app.register_blueprint(studio_api)
+app.register_blueprint(payments)
 
 with app.app_context():
    
@@ -249,12 +260,19 @@ def current_liked_ids():
 def inject_navbar():
     # The navbar's account menu needs the signed-in user's role and photo.
     nav_user = None
+    cart_count = 0
     if session.get("user_id"):
         nav_user = User.query.get(session["user_id"])
+        cart_count = (
+            db.session.query(func.coalesce(func.sum(CartItem.quantity), 0))
+            .filter(CartItem.user_id == session["user_id"])
+            .scalar()
+        )
 
     return dict(
         nav_categories=Category.query.order_by(Category.name).all(),
-        nav_user=nav_user
+        nav_user=nav_user,
+        cart_count=cart_count
     )
 
 @app.route("/")
@@ -519,9 +537,62 @@ def apply_artist():
 def about():
     return render_template("about.html")
 
+# Contact form messages are emailed here through Gmail SMTP. MAIL_USERNAME
+# is the Gmail account that sends them and MAIL_PASSWORD is a Gmail app
+# password (Google Account > Security > App passwords), not the normal one.
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", ADMIN_EMAIL)
+MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+
+
+def send_contact_email(name, email, message):
+    """Email a contact form message to CONTACT_EMAIL. Replying to the email
+    goes straight to the visitor. Returns False if it couldn't be sent."""
+    if not MAIL_USERNAME or not MAIL_PASSWORD:
+        app.logger.warning("Contact form: MAIL_USERNAME / MAIL_PASSWORD not set.")
+        return False
+
+    mail = EmailMessage()
+    mail["Subject"] = f"StickerNest contact: {name}"
+    mail["From"] = f"StickerNest <{MAIL_USERNAME}>"
+    mail["To"] = CONTACT_EMAIL
+    mail["Reply-To"] = email
+    mail.set_content(f"Name: {name}\nEmail: {email}\n\n{message}")
+
+    try:
+        with smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=15) as server:
+            server.starttls()
+            server.login(MAIL_USERNAME, MAIL_PASSWORD)
+            server.send_message(mail)
+    except (smtplib.SMTPException, OSError) as error:
+        app.logger.error("Contact form email failed: %s", error)
+        return False
+
+    return True
+
+
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+    form = {}
+
+    if request.method == "POST":
+        # Header fields can't contain line breaks
+        name = " ".join(request.form.get("name", "").split())[:100]
+        email = request.form.get("email", "").strip()[:120]
+        message = request.form.get("message", "").strip()[:5000]
+        form = {"name": name, "email": email, "message": message}
+
+        if not name or not message or "@" not in email or any(c in email for c in "\r\n "):
+            flash("Please fill in your name, a valid email and a message.")
+        elif send_contact_email(name, email, message):
+            flash("Thanks for getting in touch! We'll reply to your email soon.")
+            return redirect(url_for("contact"))
+        else:
+            flash(f"Sorry, your message couldn't be sent right now. Please email us at {CONTACT_EMAIL}.")
+
+    return render_template("contact.html", form=form, contact_email=CONTACT_EMAIL)
 
 
 def find_user_by_email(email):
@@ -955,6 +1026,7 @@ def delete_sticker(sticker_id):
         return redirect(url_for("artist_dashboard"))
 
     Wishlist.query.filter_by(sticker_id=sticker.id).delete()
+    CartItem.query.filter_by(sticker_id=sticker.id).delete()
     db.session.delete(sticker)
     db.session.commit()
 
@@ -1217,9 +1289,9 @@ def admin_approve_sticker(sticker_id):
     db.session.commit()
 
     if was_live:
-        flash(f"Price of \"{sticker.name}\" updated to Rs. {sticker.price:g}.")
+        flash(f"Price of \"{sticker.name}\" updated to {format_rupees(sticker.price)}.")
     else:
-        flash(f"\"{sticker.name}\" approved at Rs. {sticker.price:g}. It's now live in the shop.")
+        flash(f"\"{sticker.name}\" approved at {format_rupees(sticker.price)}. It's now live in the shop.")
     return redirect(request.referrer or url_for("admin_stickers"))
 
 
@@ -1264,6 +1336,7 @@ def admin_delete_sticker(sticker_id):
         return redirect(request.referrer or url_for("admin_stickers"))
 
     Wishlist.query.filter_by(sticker_id=sticker.id).delete()
+    CartItem.query.filter_by(sticker_id=sticker.id).delete()
     db.session.delete(sticker)
     db.session.commit()
 

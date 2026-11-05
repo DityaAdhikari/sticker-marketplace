@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Order Management | StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set status_names = {'paid': 'Paid', 'pending': 'Awaiting payment', 'failed': 'Failed'} %}
+
+<div class="admin-dashboard">
+
+    <header class="admin-header">
+        <span class="admin-eyebrow">STICKERNEST ADMINISTRATION</span>
+        <h1>Order Management</h1>
+        <p>Monitor customer orders and reconcile Khalti and eSewa payments.</p>
+    </header>
+
+    <!-- Stuck orders alert -->
+    {% if stale_count %}
+        <form method="POST"
+              action="{{ url_for('payments.admin_reconcile_orders') }}"
+              class="review-alert reconcile-alert">
+            <span class="review-alert-icon"><i class="fa-solid fa-rotate"></i></span>
+            <span class="review-alert-text">
+                <strong>{{ stale_count }} {{ 'order has' if stale_count == 1 else 'orders have' }} been awaiting payment for over {{ reconcile_minutes }} minutes</strong>
+                <span>Reconcile asks Khalti and eSewa for their real status and settles them.</span>
+            </span>
+            <button type="submit" class="review-alert-cta">Reconcile now →</button>
+        </form>
+    {% endif %}
+
+    <!-- Overview -->
+    <section class="admin-overview">
+        <div class="admin-stats">
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Total Orders</span>
+                    <span class="stat-icon">▤</span>
+                </div>
+                <p class="stat-number">{{ total_orders }}</p>
+                <span class="stat-description">Every checkout attempt</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Revenue</span>
+                    <span class="stat-icon">₨</span>
+                </div>
+                <p class="stat-number">{{ revenue|rupees }}</p>
+                <span class="stat-description">From {{ status_counts.get('paid', 0) }} paid orders</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Awaiting Payment</span>
+                    <span class="stat-icon">⧗</span>
+                </div>
+                <p class="stat-number">{{ status_counts.get('pending', 0) }}</p>
+                <span class="stat-description">Not yet confirmed by the provider</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span class="stat-label">Failed</span>
+                    <span class="stat-icon">✕</span>
+                </div>
+                <p class="stat-number">{{ status_counts.get('failed', 0) }}</p>
+                <span class="stat-description">Cancelled, expired or mismatched</span>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="admin-overview">
+
+        <div class="user-heading">
+            <h2>Orders</h2>
+            <p>{{ pagination.total }} matching {{ 'order' if pagination.total == 1 else 'orders' }}</p>
+        </div>
+
+        <!-- Search and Filter -->
+        <form method="GET"
+              action="{{ url_for('payments.admin_orders') }}"
+              class="user-filter-form">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Order ID, customer, email or transaction ref..."
+                value="{{ filters.search }}"
+            >
+
+            <select name="method">
+                <option value="">All Methods</option>
+                <option value="khalti" {% if filters.method == "khalti" %}selected{% endif %}>Khalti</option>
+                <option value="esewa" {% if filters.method == "esewa" %}selected{% endif %}>eSewa</option>
+            </select>
+
+            <select name="status">
+                <option value="">All Statuses</option>
+                {% for value, label in status_names.items() %}
+                <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label class="date-filter">
+                From
+                <input type="date" name="from" value="{{ filters['from'] }}">
+            </label>
+
+            <label class="date-filter">
+                To
+                <input type="date" name="to" value="{{ filters.to }}">
+            </label>
+
+            <button type="submit">Apply Filters</button>
+
+            <a href="{{ url_for('payments.admin_orders') }}"
+               class="clear-filter">
+                Clear
+            </a>
+
+        </form>
+
+        <!-- Order Table -->
+        <div class="user-table-wrapper">
+
+            <table class="user-table">
+
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Customer</th>
+                        <th>Placed</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Transaction</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('payments.admin_order_detail', order_id=order.id) }}" class="order-link">
+                                #{{ order.id }}
+                            </a>
+                        </td>
+                        <td>
+                            <strong class="table-primary">{{ order.user.name }}</strong>
+                            <span class="table-secondary">{{ order.user.email }}</span>
+                        </td>
+                        <td>{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                        <td>{{ order.item_count }}</td>
+                        <td>{{ order.total_paisa|paisa }}</td>
+                        <td>
+                            <span class="method-label method-{{ order.payment_method }}">
+                                {{ 'eSewa' if order.payment_method == 'esewa' else 'Khalti' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="order-status order-{{ order.status }}">{{ status_names[order.status] }}</span>
+                        </td>
+                        <td class="summary-code">{{ order.transaction_id or '—' }}</td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-users">
+                            No matching orders found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav class="admin-pagination" aria-label="Order pages">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('payments.admin_orders', page=pagination.prev_num, **active_filters) }}">‹ Prev</a>
+            {% endif %}
+
+            {% for page in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                {% if page is none %}
+                    <span class="page-gap">…</span>
+                {% elif page == pagination.page %}
+                    <span class="page-current" aria-current="page">{{ page }}</span>
+                {% else %}
+                    <a href="{{ url_for('payments.admin_orders', page=page, **active_filters) }}">{{ page }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for('payments.admin_orders', page=pagination.next_num, **active_filters) }}">Next ›</a>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+    </section>
+
+    <a href="{{ url_for('admin_dashboard') }}"
+       class="back-dashboard">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}

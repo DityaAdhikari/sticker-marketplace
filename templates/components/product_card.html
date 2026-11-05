@@ -28,7 +28,7 @@
       </form>
     </div>
 
-    <p class="pc-price">Rs. {{ sticker.price | int }}</p>
+    <p class="pc-price">{{ sticker.price|rupees }}</p>
 
     {% if show_artist %}
       {% set artist_label = sticker.artist.handle or sticker.artist.display_name %}
@@ -48,7 +48,7 @@
       </div>
     {% endif %}
 
-    <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}" class="pc-buy">
+    <a href="{{ url_for('payments.checkout', buy=sticker.id) }}" class="pc-buy">
       Buy Now
     </a>
   </div>

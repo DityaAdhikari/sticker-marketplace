@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} | StickerNest Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+{% set status_names = {'paid': 'Paid', 'pending': 'Awaiting payment', 'failed': 'Failed'} %}
+{% set is_esewa = order.payment_method == 'esewa' %}
+{% set method_name = 'eSewa' if is_esewa else 'Khalti' %}
+
+<div class="admin-dashboard">
+
+    <header class="admin-header admin-order-header">
+        <div>
+            <span class="admin-eyebrow">STICKERNEST ADMINISTRATION</span>
+            <h1>Order #{{ order.id }}</h1>
+            <p>
+                Placed {{ order.created_at.strftime('%d %b %Y, %I:%M %p') }} ·
+                <span class="order-status order-{{ order.status }}">{{ status_names[order.status] }}</span>
+            </p>
+        </div>
+
+        {% if order.payment_reference %}
+            <form method="POST" action="{{ url_for('payments.admin_verify_order', order_id=order.id) }}">
+                <button type="submit" class="checkout-btn">
+                    <i class="fa-solid fa-rotate"></i> Re-check with {{ method_name }}
+                </button>
+            </form>
+        {% endif %}
+    </header>
+
+    {% if order.failure_reason %}
+        <p class="pd-review-banner order-failed">
+            <i class="fa-solid fa-circle-xmark"></i> {{ order.failure_reason }}
+        </p>
+    {% endif %}
+
+    <div class="checkout-layout">
+
+        <div class="admin-order-main">
+
+            <!-- Items -->
+            <section class="checkout-panel">
+                <h2>Items</h2>
+
+                <ul class="checkout-items">
+                    {% for item in order.items %}
+                    <li>
+                        {% if item.sticker_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.sticker_image) }}" alt="">
+                        {% endif %}
+                        <span class="checkout-item-name">
+                            {% if item.sticker %}
+                                <a href="{{ url_for('sticker_detail', sticker_id=item.sticker_id) }}">{{ item.sticker_name }}</a>
+                                <small>by {{ item.sticker.artist.display_name }}</small>
+                            {% else %}
+                                {{ item.sticker_name }} <small>(sticker deleted)</small>
+                            {% endif %}
+                            <small>{{ item.unit_price_paisa|paisa }} × {{ item.quantity }}</small>
+                        </span>
+                        <strong>{{ item.line_total|rupees }}</strong>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>{{ order.total_paisa|paisa }}</span>
+                </div>
+            </section>
+
+            <!-- Verification history -->
+            <section class="checkout-panel">
+                <h2>Payment Checks</h2>
+
+                {% if checks %}
+                <div class="user-table-wrapper">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>When</th>
+                                <th>By</th>
+                                <th>{{ method_name }} said</th>
+                                <th>Order after</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for check in checks %}
+                            <tr>
+                                <td>{{ check.checked_at.strftime('%d %b %Y, %I:%M:%S %p') }}</td>
+                                <td>
+                                    {% if check.source == 'admin' %}
+                                        Admin{% if check.admin %} ({{ check.admin.name }}){% endif %}
+                                    {% elif check.source == 'customer' %}
+                                        Customer
+                                    {% else %}
+                                        Provider redirect
+                                    {% endif %}
+                                </td>
+                                <td class="summary-code">{{ check.provider_status }}</td>
+                                <td>
+                                    <span class="order-status order-{{ check.order_status }}">{{ status_names.get(check.order_status, check.order_status) }}</span>
+                                </td>
+                                <td class="check-note">{{ check.note or '' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="table-secondary">No one has checked this payment with {{ method_name }} yet.</p>
+                {% endif %}
+            </section>
+
+        </div>
+
+        <aside class="admin-order-side">
+
+            <!-- Payment -->
+            <section class="checkout-summary">
+                <h2>Payment</h2>
+
+                <div class="summary-row">
+                    <span>Method</span>
+                    <span class="method-label method-{{ order.payment_method }}">{{ method_name }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>{{ 'Transaction UUID' if is_esewa else 'Payment ID (pidx)' }}</span>
+                    <span class="summary-code">{{ order.payment_reference or '—' }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>{{ 'eSewa ref ID' if is_esewa else 'Transaction ID' }}</span>
+                    <span class="summary-code">{{ order.transaction_id or '—' }}</span>
+                </div>
+                {% if not is_esewa %}
+                    <div class="summary-row">
+                        <span>Merchant order ID</span>
+                        <span class="summary-code">SN-{{ order.id }}</span>
+                    </div>
+                {% endif %}
+                <div class="summary-row">
+                    <span>Paid at</span>
+                    <span>{{ order.paid_at.strftime('%d %b %Y, %I:%M %p') if order.paid_at else '—' }}</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Amount</span>
+                    <span>{{ order.total_paisa|paisa }}</span>
+                </div>
+            </section>
+
+            <!-- Customer -->
+            <section class="checkout-summary">
+                <h2>Customer</h2>
+
+                <div class="summary-row">
+                    <span>Name</span>
+                    <span>{{ order.user.name }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Email</span>
+                    <a href="mailto:{{ order.user.email }}" class="summary-code">{{ order.user.email }}</a>
+                </div>
+                <div class="summary-row">
+                    <span>Account</span>
+                    <span>#{{ order.user.id }} · <span class="role-label role-{{ order.user.role }}">{{ order.user.role|capitalize }}</span></span>
+                </div>
+                {% if order.user.location %}
+                    <div class="summary-row">
+                        <span>Location</span>
+                        <span>{{ order.user.location }}</span>
+                    </div>
+                {% endif %}
+                <div class="summary-row">
+                    <span>Orders</span>
+                    <span>{{ customer_paid_count }} paid of {{ customer_order_count }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Total spent</span>
+                    <span>{{ customer_spent|rupees }}</span>
+                </div>
+
+                <a href="{{ url_for('payments.admin_orders', search=order.user.email) }}" class="checkout-link">
+                    All orders from this customer →
+                </a>
+            </section>
+
+        </aside>
+
+    </div>
+
+    <a href="{{ url_for('payments.admin_orders') }}"
+       class="back-dashboard">
+        ← Back to Orders
+    </a>
+
+</div>
+
+{% endblock %}

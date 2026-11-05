@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cart - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<main class="checkout-page">
+
+    <header class="checkout-header">
+        <h1>Your Cart</h1>
+        <p>{{ lines|sum(attribute='quantity') }} {{ 'item' if lines|sum(attribute='quantity') == 1 else 'items' }}</p>
+    </header>
+
+    {% if lines %}
+
+    <div class="checkout-layout">
+
+        <section class="cart-list" aria-label="Cart items">
+            {% for line in lines %}
+            {% set sticker = line.sticker %}
+            <article class="cart-row">
+                <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}" class="cart-thumb">
+                    <img src="{{ url_for('static', filename='uploads/' + sticker.image) }}" alt="{{ sticker.name }}">
+                </a>
+
+                <div class="cart-info">
+                    <a href="{{ url_for('sticker_detail', sticker_id=sticker.id) }}" class="cart-name">{{ sticker.name }}</a>
+                    <span class="cart-artist">by {{ sticker.artist.display_name }}</span>
+                    <span class="cart-unit">{{ line.unit_paisa|paisa }} each</span>
+                </div>
+
+                <form method="POST"
+                      action="{{ url_for('payments.update_cart', item_id=line.item.id) }}"
+                      class="cart-qty">
+                    <label class="visually-hidden" for="qty-{{ line.item.id }}">Quantity</label>
+                    <input type="number"
+                           id="qty-{{ line.item.id }}"
+                           name="quantity"
+                           value="{{ line.quantity }}"
+                           min="1"
+                           max="{{ max_quantity }}"
+                           onchange="this.form.submit()">
+                    <noscript><button type="submit">Update</button></noscript>
+                </form>
+
+                <span class="cart-line-total">{{ line.line_paisa|paisa }}</span>
+
+                <form method="POST"
+                      action="{{ url_for('payments.remove_from_cart', item_id=line.item.id) }}">
+                    <button type="submit" class="cart-remove" aria-label="Remove {{ sticker.name }}">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </form>
+            </article>
+            {% endfor %}
+        </section>
+
+        <aside class="checkout-summary">
+            <h2>Order Summary</h2>
+
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>{{ total|rupees }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery</span>
+                <span>Free</span>
+            </div>
+            <div class="summary-row summary-total">
+                <span>Total</span>
+                <span>{{ total|rupees }}</span>
+            </div>
+
+            <a href="{{ url_for('payments.checkout') }}" class="checkout-btn">
+                Proceed to Checkout
+            </a>
+            <a href="{{ url_for('shop') }}" class="checkout-link">Continue shopping</a>
+        </aside>
+
+    </div>
+
+    {% else %}
+
+        <div class="empty-profile">
+            <div class="empty-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+            <h3>Your cart is empty</h3>
+            <p>Find stickers you love and add them to your cart.</p>
+            <a href="{{ url_for('shop') }}">Explore Stickers</a>
+        </div>
+
+    {% endif %}
+
+</main>
+
+{% endblock %}

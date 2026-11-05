@@ -1004,3 +1004,44 @@ select.text-input {
     width: auto;
   }
 }
+
+/* Landscape sheets: the same paper height as portrait, so wider */
+.a5-paper.landscape {
+  width: min(100%, 510px);
+}
+
+@media (max-width: 1000px) {
+  .a5-paper.landscape {
+    width: min(100%, 510px);
+  }
+}
+
+@media (max-width: 600px) {
+  .a5-paper.landscape {
+    width: 100%;
+  }
+}
+
+/* Safe margin / spacing warning under the sheet */
+.layout-warning {
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  border: 1px solid #E2BFA2;
+  border-radius: 10px;
+  background: #F6E7D8;
+  color: #7A4A2B;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

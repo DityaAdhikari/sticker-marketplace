@@ -115,12 +115,12 @@
             </a>
 
             <!-- Order Management -->
-            <div class="management-card coming-soon">
+            <a href="{{ url_for('payments.admin_orders') }}" class="management-card">
                 <div class="management-icon">▤</div>
                 <h3>Order Management</h3>
-                <p>Monitor customer orders, payments and fulfilment.</p>
-                <span class="coming-soon-label">Coming Soon</span>
-            </div>
+                <p>Monitor customer orders and reconcile Khalti and eSewa payments.</p>
+                <span class="management-link">Manage Orders <span>→</span></span>
+            </a>
 
         </div>
     </section>
@@ -176,7 +176,7 @@
                             <span>by {{ sticker.artist.display_name }}</span>
                         </div>
                         {% if sticker.is_live %}
-                            <span class="activity-price">Rs. {{ sticker.price|int }}</span>
+                            <span class="activity-price">{{ sticker.price|rupees }}</span>
                         {% else %}
                             <span class="review-status review-{{ sticker.status }}">{{ sticker.status|capitalize }}</span>
                         {% endif %}

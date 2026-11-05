@@ -1,21 +1,28 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import {
+  BLEED_MM,
+  EXPORT_DPI,
   EXPORT_SCALE,
   MM,
-  PAGE,
+  PAPER_SIZES,
   PREVIEW_SCALE,
+  SAFE_MARGIN_MM,
+  STICKER_SPACING_MM,
   TEXT_FONTS,
   createCanvas,
   createSpriteCache,
   drawPage,
+  getPage,
   renderStickerImage,
   renderTextSource,
   sourceSize,
   stickerExtent,
 } from './lib/render.js'
 import { removeBackground } from './lib/cutout.js'
-import { canvasToBlob, downloadBlob, pdfFromCanvas, pngWithDpi } from './lib/exportFile.js'
+import { renderCutlineCanvas, sheetCutPaths } from './lib/cutline.js'
+import { canvasToBlob, downloadBlob, pdfSheet, pngWithDpi } from './lib/exportFile.js'
+import { arrangeStickers, fitStickersToPage, layoutIssues } from './lib/layout.js'
 import {
   FLASK_URL,
   deleteDesign,
@@ -29,7 +36,14 @@ import {
 const DRAFT_KEY = 'stickernest-a5-draft'
 const DRAFT_VERSION = 2
 
-const DEFAULT_SHEET = { color: '#ffffff', transparent: false }
+const DEFAULT_SHEET = {
+  color: '#ffffff',
+  transparent: false,
+  size: 'A5',
+  orientation: 'portrait',
+  bleed: false,
+  cutline: true,
+}
 
 const DEFAULT_TEXT = {
   content: 'Hello!',
@@ -249,7 +263,7 @@ function App() {
   const [lockRatio, setLockRatio] = useState(true)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState(
-    'Upload images to start arranging your A5 sheet.',
+    'Upload images to start arranging your sticker sheet.',
   )
 
   // Flask account state. `undefined` while loading, `null` when logged out.
@@ -263,6 +277,13 @@ function App() {
     stickers.find((sticker) => sticker.id === selectedId) ?? null
   const selectedIndex = stickers.findIndex((sticker) => sticker.id === selectedId)
   const sheetBackground = sheet.transparent ? null : sheet.color
+
+  const page = useMemo(
+    () => getPage({ size: sheet.size, orientation: sheet.orientation, bleed: sheet.bleed }),
+    [sheet.size, sheet.orientation, sheet.bleed],
+  )
+  const paperLabel = `${page.size} ${page.orientation}`
+  const issues = useMemo(() => layoutIssues(stickers, page), [stickers, page])
 
   // Keep refs synchronized for pointer events and timers.
   useEffect(() => {
@@ -282,13 +303,14 @@ function App() {
     if (!canvas) return
 
     drawPage(canvas, stickers, {
+      page,
       activeId: selectedId,
       guides: true,
       background: sheetBackground,
       spriteCache,
     })
     spriteCache.prune(new Set(stickers.map((sticker) => sticker.id)))
-  }, [stickers, selectedId, sheetBackground, spriteCache])
+  }, [stickers, selectedId, sheetBackground, spriteCache, page])
 
   useEffect(() => {
     getCurrentUser()
@@ -342,7 +364,7 @@ function App() {
         const height = image.naturalHeight * scale
 
         const x = 28 + ((id - 1) % 3) * 28
-        const y = Math.min(35 + ((id - 1) % 8) * 58, PAGE.height - height - 18)
+        const y = Math.min(35 + ((id - 1) % 8) * 58, page.height - height - 18)
 
         setStickers((current) => [
           ...current,
@@ -355,7 +377,7 @@ function App() {
             source: image,
             crop: { x: 0, y: 0, w: image.naturalWidth, h: image.naturalHeight },
             cutout: { enabled: false, tolerance: 40 },
-            x: Math.max(0, Math.min(x, PAGE.width - width - 18)),
+            x: Math.max(0, Math.min(x, page.width - width - 18)),
             y: Math.max(0, y),
             width,
             height,
@@ -394,7 +416,7 @@ function App() {
         name: 'Text',
         text,
         source,
-        x: (PAGE.width - width) / 2,
+        x: (page.width - width) / 2,
         y: 60,
         width,
         height,
@@ -528,8 +550,8 @@ function App() {
     const rect = canvas.getBoundingClientRect()
 
     return {
-      x: ((event.clientX - rect.left) / rect.width) * PAGE.width,
-      y: ((event.clientY - rect.top) / rect.height) * PAGE.height,
+      x: ((event.clientX - rect.left) / rect.width) * page.width,
+      y: ((event.clientY - rect.top) / rect.height) * page.height,
     }
   }
 
@@ -584,8 +606,8 @@ function App() {
     const y = drag.originalY + point.y - drag.startY
 
     updateSticker(sticker.id, {
-      x: clamp(x, 0, PAGE.width - sticker.width),
-      y: clamp(y, 0, PAGE.height - sticker.height),
+      x: clamp(x, 0, page.width - sticker.width),
+      y: clamp(y, 0, page.height - sticker.height),
     })
   }
 
@@ -609,7 +631,7 @@ function App() {
     }
 
     // Never let a sticker grow beyond the page.
-    const fit = Math.min(1, PAGE.width / width, PAGE.height / height)
+    const fit = Math.min(1, page.width / width, page.height / height)
     width *= fit
     height *= fit
 
@@ -620,8 +642,8 @@ function App() {
     updateSticker(sticker.id, {
       width,
       height,
-      x: clamp(cx - width / 2, 0, PAGE.width - width),
-      y: clamp(cy - height / 2, 0, PAGE.height - height),
+      x: clamp(cx - width / 2, 0, page.width - width),
+      y: clamp(cy - height / 2, 0, page.height - height),
     })
   }
 
@@ -630,9 +652,9 @@ function App() {
     if (!sticker) return
 
     if (axis === 'x') {
-      updateSticker(sticker.id, { x: clamp(mm * MM, 0, PAGE.width - sticker.width) })
+      updateSticker(sticker.id, { x: clamp(mm * MM, 0, page.width - sticker.width) })
     } else {
-      updateSticker(sticker.id, { y: clamp(mm * MM, 0, PAGE.height - sticker.height) })
+      updateSticker(sticker.id, { y: clamp(mm * MM, 0, page.height - sticker.height) })
     }
   }
 
@@ -660,8 +682,8 @@ function App() {
       ...sticker,
       id,
       name: `${sticker.name} copy`,
-      x: clamp(sticker.x + 12, 0, PAGE.width - sticker.width),
-      y: clamp(sticker.y + 12, 0, PAGE.height - sticker.height),
+      x: clamp(sticker.x + 12, 0, page.width - sticker.width),
+      y: clamp(sticker.y + 12, 0, page.height - sticker.height),
     }
 
     setStickers((current) => {
@@ -695,10 +717,43 @@ function App() {
     })
   }
 
-  function renderSheet(width, height, background) {
+  function renderSheet(width, height, background, bleedMm = 0) {
     const canvas = createCanvas(width, height)
-    drawPage(canvas, stickers, { background })
+    drawPage(canvas, stickers, { page, background, bleedMm })
     return canvas
+  }
+
+  // Change paper size / orientation. Stickers keep their printed size and
+  // are moved back onto the page if they now fall off it.
+  function changePaper(changes) {
+    const next = { ...sheet, ...changes }
+    const nextPage = getPage(next)
+    setSheet(next)
+    setStickers((current) => fitStickersToPage(current, nextPage))
+    setMessage(
+      `${nextPage.size} ${nextPage.orientation} · ${nextPage.widthMm} × ${nextPage.heightMm} mm.`,
+    )
+  }
+
+  function autoArrange() {
+    const positions = arrangeStickers(stickers, page)
+
+    if (!positions) {
+      setMessage(
+        `These stickers don't all fit on ${paperLabel} with ${SAFE_MARGIN_MM} mm margins ` +
+          `and ${STICKER_SPACING_MM} mm spacing. Make some smaller or use a larger sheet.`,
+      )
+      return
+    }
+
+    setStickers((current) =>
+      current.map((sticker) => ({ ...sticker, ...positions[sticker.id] })),
+    )
+    setMessage(`Stickers arranged ${STICKER_SPACING_MM} mm apart inside the safe margin.`)
+  }
+
+  function exportName(extension, suffix = '') {
+    return `stickernest-${page.size.toLowerCase()}-${page.orientation}${suffix}.${extension}`
   }
 
   async function runTask(task, failure) {
@@ -713,21 +768,48 @@ function App() {
     }
   }
 
+  const bleedNote = page.bleedMm ? ` with ${page.bleedMm} mm bleed` : ''
+
   function exportPdf() {
     return runTask(async () => {
       // JPEG has no transparency, so a transparent sheet prints on white.
-      const canvas = renderSheet(PAGE.exportWidth, PAGE.exportHeight, sheet.color)
-      const blob = await pdfFromCanvas(canvas, PAGE.widthMm, PAGE.heightMm)
-      downloadBlob(blob, 'stickernest-a5-sheet.pdf')
-      setMessage('A5 PDF exported at 148 × 210 mm. Print at Actual size / 100%.')
+      const canvas = renderSheet(page.exportWidth, page.exportHeight, sheet.color, page.bleedMm)
+      const cutPaths = sheet.cutline ? sheetCutPaths(stickers, page.bleedMm) : []
+      const blob = await pdfSheet({
+        canvas,
+        widthMm: page.widthMm,
+        heightMm: page.heightMm,
+        bleedMm: page.bleedMm,
+        cutPaths,
+      })
+      downloadBlob(blob, exportName('pdf'))
+      setMessage(
+        `${paperLabel} PDF exported at ${page.widthMm} × ${page.heightMm} mm${bleedNote}` +
+          `${cutPaths.length ? ' with a CutContour cutline layer' : ''}. Print at Actual size / 100%.`,
+      )
     }, 'PDF export failed.')
   }
 
   function exportPng() {
     return runTask(async () => {
-      const canvas = renderSheet(PAGE.exportWidth, PAGE.exportHeight, sheetBackground)
-      downloadBlob(await pngWithDpi(canvas, 300), 'stickernest-a5-sheet.png')
-      setMessage('A5 PNG exported at 300 DPI.')
+      const canvas = renderSheet(page.exportWidth, page.exportHeight, sheetBackground, page.bleedMm)
+      downloadBlob(await pngWithDpi(canvas, EXPORT_DPI), exportName('png'))
+
+      // The cutline goes in its own file, lined up pixel for pixel.
+      if (sheet.cutline) {
+        const cutline = renderCutlineCanvas(
+          sheetCutPaths(stickers, page.bleedMm),
+          page.exportWidth,
+          page.exportHeight,
+          EXPORT_DPI / 25.4,
+        )
+        downloadBlob(await pngWithDpi(cutline, EXPORT_DPI), exportName('png', '-cutline'))
+      }
+
+      setMessage(
+        `${paperLabel} PNG exported at ${EXPORT_DPI} DPI (${page.exportWidth} × ${page.exportHeight} px)` +
+          `${bleedNote}${sheet.cutline ? ', plus a separate cutline PNG' : ''}.`,
+      )
     }, 'PNG export failed.')
   }
 
@@ -771,7 +853,7 @@ function App() {
       }
 
       const thumbnail = await canvasToBlob(
-        renderSheet(PAGE.width / 2, PAGE.height / 2, sheet.color),
+        renderSheet(page.width / 2, page.height / 2, sheet.color),
         'image/jpeg',
         0.8,
       )
@@ -871,8 +953,8 @@ function App() {
         event.preventDefault()
         const [dx, dy] = nudges[event.key]
         updateSticker(selectedSticker.id, {
-          x: clamp(selectedSticker.x + dx, 0, PAGE.width - selectedSticker.width),
-          y: clamp(selectedSticker.y + dy, 0, PAGE.height - selectedSticker.height),
+          x: clamp(selectedSticker.x + dx, 0, page.width - selectedSticker.width),
+          y: clamp(selectedSticker.y + dy, 0, page.height - selectedSticker.height),
         })
       } else if (event.key === 'Delete' || event.key === 'Backspace') {
         event.preventDefault()
@@ -909,7 +991,7 @@ function App() {
       <div className="studio-layout">
         <aside className="sidebar">
           <p className="sidebar-label">WORKSPACE</p>
-          <button className="nav-item active">▦ &nbsp; A5 Sheet</button>
+          <button className="nav-item active">▦ &nbsp; {page.size} Sheet</button>
           <button className="nav-item" onClick={() => fileInputRef.current?.click()}>
             ↑ &nbsp; Add stickers
           </button>
@@ -938,14 +1020,16 @@ function App() {
                 Add, arrange and size each sticker for printing.
               </p>
             </div>
-            <span className="status-pill">A5 · PORTRAIT</span>
+            <span className="status-pill">
+              {page.size} · {page.orientation.toUpperCase()}
+            </span>
           </div>
 
           <div className="print-workspace">
             <section className="panel sheet-panel">
               <div className="panel-heading">
                 <div>
-                  <h2>Your A5 sheet</h2>
+                  <h2>Your {page.size} sheet</h2>
                   <p>
                     Click a sticker to select it. Drag or use arrow keys to move it.
                     Ctrl+D duplicates, Delete removes.
@@ -955,23 +1039,38 @@ function App() {
               </div>
 
               <div className="sheet-stage">
-                <div className={`a5-paper ${sheet.transparent ? 'transparent' : ''}`}>
+                <div
+                  className={`a5-paper ${page.orientation} ${sheet.transparent ? 'transparent' : ''}`}
+                >
                   <canvas
                     ref={canvasRef}
-                    width={PAGE.width * PREVIEW_SCALE}
-                    height={PAGE.height * PREVIEW_SCALE}
+                    width={page.width * PREVIEW_SCALE}
+                    height={page.height * PREVIEW_SCALE}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
-                    aria-label="A5 sticker sheet editor"
+                    aria-label={`${paperLabel} sticker sheet editor`}
                   />
                 </div>
               </div>
 
               <p className="canvas-caption">
-                A5 portrait · 148 × 210 mm · Print at 100% scale
+                {paperLabel} · {page.widthMm} × {page.heightMm} mm · Dashed line is the{' '}
+                {SAFE_MARGIN_MM} mm safe margin · Print at 100% scale
               </p>
+
+              {(issues.outside.length > 0 || issues.tooClose.length > 0) && (
+                <p className="layout-warning" role="status">
+                  {issues.outside.length > 0 &&
+                    `${issues.outside.length} sticker(s) cross the ${SAFE_MARGIN_MM} mm safe margin. `}
+                  {issues.tooClose.length > 0 &&
+                    `${issues.tooClose.length} sticker(s) may be closer than ${STICKER_SPACING_MM} mm to another. `}
+                  <button type="button" className="link-button" onClick={autoArrange}>
+                    Auto-arrange
+                  </button>
+                </p>
+              )}
 
               <input
                 ref={fileInputRef}
@@ -1004,7 +1103,14 @@ function App() {
                   onClick={exportPng}
                   disabled={!stickers.length || busy}
                 >
-                  ↓ PNG (300 DPI)
+                  ↓ PNG ({EXPORT_DPI} DPI)
+                </button>
+                <button
+                  className="secondary-button"
+                  onClick={autoArrange}
+                  disabled={!stickers.length || busy}
+                >
+                  ▦ Auto-arrange
                 </button>
               </div>
 
@@ -1084,7 +1190,7 @@ function App() {
                         label="Width"
                         value={sticker.width / MM}
                         min={3}
-                        max={PAGE.widthMm}
+                        max={page.widthMm}
                         suffix="mm"
                         onCommit={(mm) => setSizeMm('width', mm)}
                       />
@@ -1092,7 +1198,7 @@ function App() {
                         label="Height"
                         value={sticker.height / MM}
                         min={3}
-                        max={PAGE.heightMm}
+                        max={page.heightMm}
                         suffix="mm"
                         onCommit={(mm) => setSizeMm('height', mm)}
                       />
@@ -1100,7 +1206,7 @@ function App() {
                         label="X"
                         value={sticker.x / MM}
                         min={0}
-                        max={PAGE.widthMm}
+                        max={page.widthMm}
                         suffix="mm"
                         onCommit={(mm) => setPositionMm('x', mm)}
                       />
@@ -1108,7 +1214,7 @@ function App() {
                         label="Y"
                         value={sticker.y / MM}
                         min={0}
-                        max={PAGE.heightMm}
+                        max={page.heightMm}
                         suffix="mm"
                         onCommit={(mm) => setPositionMm('y', mm)}
                       />
@@ -1120,9 +1226,9 @@ function App() {
                       label="Width"
                       display={`${round1(sticker.width / MM)} mm`}
                       min={5}
-                      max={PAGE.widthMm}
+                      max={page.widthMm}
                       step={0.5}
-                      value={clamp(round1(sticker.width / MM), 5, PAGE.widthMm)}
+                      value={clamp(round1(sticker.width / MM), 5, page.widthMm)}
                       onChange={(mm) => setSizeMm('width', mm)}
                     />
 
@@ -1374,6 +1480,54 @@ function App() {
               <section className="control-section">
                 <h3>Sheet</h3>
 
+                <span className="field-label">Paper size</span>
+                <div className="segmented">
+                  {Object.keys(PAPER_SIZES).map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      className={page.size === size ? 'selected' : ''}
+                      onClick={() => changePaper({ size })}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+
+                <span className="field-label">Orientation</span>
+                <div className="segmented">
+                  {['portrait', 'landscape'].map((orientation) => (
+                    <button
+                      key={orientation}
+                      type="button"
+                      className={page.orientation === orientation ? 'selected' : ''}
+                      onClick={() => changePaper({ orientation })}
+                    >
+                      {orientation}
+                    </button>
+                  ))}
+                </div>
+
+                <Toggle
+                  label={`Add ${BLEED_MM} mm bleed to exports`}
+                  checked={sheet.bleed}
+                  onChange={(bleed) => setSheet({ ...sheet, bleed })}
+                />
+                <Toggle
+                  label="Export cutline layer"
+                  checked={sheet.cutline}
+                  onChange={(cutline) => setSheet({ ...sheet, cutline })}
+                />
+
+                <button
+                  type="button"
+                  className="secondary-button full-button"
+                  onClick={autoArrange}
+                  disabled={!stickers.length}
+                >
+                  Auto-arrange ({STICKER_SPACING_MM} mm spacing)
+                </button>
+
                 <ColorField
                   label="Sheet background"
                   value={sheet.color}
@@ -1387,11 +1541,20 @@ function App() {
 
                 <div className="info-row">
                   <span>Paper size</span>
-                  <strong>A5 · Portrait · 148 × 210 mm</strong>
+                  <strong>
+                    {page.size} · {page.orientation} · {page.widthMm} × {page.heightMm} mm
+                  </strong>
                 </div>
                 <div className="info-row">
                   <span>Export resolution</span>
-                  <strong>{PAGE.exportWidth} × {PAGE.exportHeight} px · 300 DPI</strong>
+                  <strong>
+                    {page.exportWidth} × {page.exportHeight} px · {EXPORT_DPI} DPI
+                    {page.bleedMm ? ` · incl. ${page.bleedMm} mm bleed` : ''}
+                  </strong>
+                </div>
+                <div className="info-row">
+                  <span>Safe margin · spacing</span>
+                  <strong>{SAFE_MARGIN_MM} mm · {STICKER_SPACING_MM} mm</strong>
                 </div>
 
                 <button type="button" className="secondary-button full-button" onClick={saveDraft}>
@@ -1405,8 +1568,10 @@ function App() {
                 </button>
 
                 <p className="small-note">
-                  Leave space between stickers for cutting. The dashed inner
-                  border is a preview guide and is not exported.
+                  Keep stickers inside the dashed {SAFE_MARGIN_MM} mm safe margin and at
+                  least {STICKER_SPACING_MM} mm apart for cutting. The guide is not
+                  exported. The cutline traces each sticker&apos;s edge: in the PDF it is
+                  a separate “CutContour” layer; with PNG it is a second file.
                 </p>
               </section>
 
@@ -1491,8 +1656,8 @@ function App() {
               <section className="control-section">
                 <h3>Print reminder</h3>
                 <p className="small-note">
-                  Print the PDF on A5 paper at Actual size / 100%. Printer margins
-                  can vary, so test a sheet before printing a full batch.
+                  Print the PDF on {page.size} paper at Actual size / 100%. Printer
+                  margins can vary, so test a sheet before printing a full batch.
                 </p>
               </section>
             </aside>

@@ -56,6 +56,13 @@
 
       {% if nav_user %}
 
+        <a href="{{ url_for('payments.cart') }}"
+           class="nav-cart {{ 'active' if request.endpoint in ('payments.cart', 'payments.checkout') }}"
+           aria-label="Cart, {{ cart_count }} {{ 'item' if cart_count == 1 else 'items' }}">
+          <i class="fa-solid fa-cart-shopping"></i>
+          {% if cart_count %}<span class="nav-cart-count">{{ cart_count }}</span>{% endif %}
+        </a>
+
         <div class="account-menu">
           <button type="button" class="account-toggle" id="account-toggle"
                   aria-haspopup="true" aria-expanded="false" aria-controls="account-dropdown">
@@ -86,6 +93,11 @@
             <a href="{{ url_for('profile') }}"
                class="{{ 'active' if request.endpoint == 'profile' }}">
               <i class="fa-regular fa-user"></i> My Profile
+            </a>
+
+            <a href="{{ url_for('payments.orders') }}"
+               class="{{ 'active' if request.endpoint in ('payments.orders', 'payments.order_detail') }}">
+              <i class="fa-solid fa-receipt"></i> My Orders
             </a>
 
             {% if nav_user.role == "artist" %}

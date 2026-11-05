@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<main class="checkout-page">
+
+    <header class="checkout-header">
+        <h1>My Orders</h1>
+        <p>Your successful, pending and failed orders.</p>
+    </header>
+
+    {% if orders %}
+
+        <div class="order-list">
+            {% for order in orders %}
+            <a href="{{ url_for('payments.order_detail', order_id=order.id) }}" class="order-row">
+
+                <div class="order-thumbs">
+                    {% for item in order.items[:3] %}
+                        {% if item.sticker_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + item.sticker_image) }}" alt="">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="order-info">
+                    <strong>Order #{{ order.id }}</strong>
+                    <span>
+                        {{ order.created_at.strftime('%d %b %Y, %I:%M %p') }} ·
+                        {{ order.item_count }} {{ 'item' if order.item_count == 1 else 'items' }} ·
+                        {{ order.payment_method|capitalize if order.payment_method != 'esewa' else 'eSewa' }}
+                    </span>
+                </div>
+
+                <span class="order-status order-{{ order.status }}">
+                    {{ {'paid': 'Paid', 'pending': 'Awaiting payment', 'failed': 'Failed'}[order.status] }}
+                </span>
+
+                <span class="order-total">{{ order.total_paisa|paisa }}</span>
+            </a>
+            {% endfor %}
+        </div>
+
+    {% else %}
+
+        <div class="empty-profile">
+            <div class="empty-icon"><i class="fa-solid fa-receipt"></i></div>
+            <h3>No orders yet</h3>
+            <p>When you buy stickers, your orders will show up here.</p>
+            <a href="{{ url_for('shop') }}">Explore Stickers</a>
+        </div>
+
+    {% endif %}
+
+</main>
+
+{% endblock %}

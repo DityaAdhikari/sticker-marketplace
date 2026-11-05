@@ -387,3 +387,183 @@ class StickerReview(db.Model):
             cascade="all, delete-orphan"
         )
     )
+
+
+class CartItem(db.Model):
+    """A sticker in a signed-in user's cart. Prices are read from the
+    sticker at checkout, never stored here."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False,
+        index=True
+    )
+
+    sticker_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sticker.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    quantity = db.Column(db.Integer, default=1, nullable=False)
+
+    added_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id",
+            "sticker_id",
+            name="unique_user_cart_sticker"
+        ),
+    )
+
+    user = db.relationship("User", backref="cart_items")
+    sticker = db.relationship("Sticker")
+
+
+class Order(db.Model):
+    """One checkout attempt. Amounts are whole paisa (Rs. 1 = 100 paisa) so
+    totals add up exactly and match what Khalti expects."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False,
+        index=True
+    )
+
+    # pending, paid or failed
+    status = db.Column(db.String(20), default="pending", nullable=False, index=True)
+
+    # khalti or esewa
+    payment_method = db.Column(db.String(20), nullable=False)
+
+    total_paisa = db.Column(db.Integer, nullable=False)
+
+    # Khalti pidx or eSewa transaction_uuid: how we find the order when
+    # the provider sends the customer back.
+    payment_reference = db.Column(db.String(100), unique=True, nullable=True)
+
+    # Provider's own transaction id, once paid
+    transaction_id = db.Column(db.String(100), nullable=True)
+
+    failure_reason = db.Column(db.String(255), nullable=True)
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    paid_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship("User", backref="orders")
+
+    items = db.relationship(
+        "OrderItem",
+        backref="order",
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def total(self):
+        return self.total_paisa / 100
+
+    @property
+    def item_count(self):
+        return sum(item.quantity for item in self.items)
+
+
+class OrderItem(db.Model):
+    """A sticker line in an order, with its name and price copied at
+    checkout so history stays correct if the sticker changes later."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    order_id = db.Column(
+        db.Integer,
+        db.ForeignKey("order.id"),
+        nullable=False,
+        index=True
+    )
+
+    sticker_id = db.Column(
+        db.Integer,
+        db.ForeignKey("sticker.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    sticker_name = db.Column(db.String(100), nullable=False)
+
+    sticker_image = db.Column(db.String(200), nullable=True)
+
+    unit_price_paisa = db.Column(db.Integer, nullable=False)
+
+    quantity = db.Column(db.Integer, nullable=False)
+
+    sticker = db.relationship("Sticker")
+
+    @property
+    def unit_price(self):
+        return self.unit_price_paisa / 100
+
+    @property
+    def line_total(self):
+        return self.unit_price_paisa * self.quantity / 100
+
+
+class PaymentCheck(db.Model):
+    """One time we asked Khalti / eSewa for an order's status. Kept as an
+    audit trail so admins can reconcile orders against the provider."""
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    order_id = db.Column(
+        db.Integer,
+        db.ForeignKey("order.id"),
+        nullable=False,
+        index=True
+    )
+
+    # return (provider redirect), customer ("check status") or admin
+    source = db.Column(db.String(20), nullable=False)
+
+    admin_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=True
+    )
+
+    # What the provider said, e.g. "Completed", "COMPLETE", "Error"
+    provider_status = db.Column(db.String(40), nullable=False)
+
+    # The order's status after the check
+    order_status = db.Column(db.String(20), nullable=False)
+
+    note = db.Column(db.String(255), nullable=True)
+
+    checked_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    admin = db.relationship("User")
+
+    order = db.relationship(
+        "Order",
+        backref=db.backref(
+            "checks",
+            order_by="PaymentCheck.id.desc()",
+            cascade="all, delete-orphan"
+        )
+    )

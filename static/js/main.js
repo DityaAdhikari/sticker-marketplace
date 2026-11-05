@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   });
 
-  // Sticker page: thumbnails, full-size viewer and checkout notice
+  // Sticker page: thumbnails and full-size viewer
   const lightbox = document.getElementById('pd-lightbox');
   if (lightbox) {
     const gallery = JSON.parse(lightbox.dataset.gallery || '[]');
@@ -269,13 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (event.key === 'ArrowLeft') show(current - 1);
     });
   }
-
-  const checkoutNote = document.getElementById('pd-checkout-note');
-  document.querySelectorAll('[data-checkout-soon]').forEach((button) => {
-    button.addEventListener('click', () => {
-      if (checkoutNote) checkoutNote.hidden = false;
-    });
-  });
 
   // Follow / unfollow an artist without reloading. Without JavaScript the
   // form posts normally.

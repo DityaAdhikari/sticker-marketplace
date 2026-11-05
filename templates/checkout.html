@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - StickerNest{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<main class="checkout-page">
+
+    <header class="checkout-header">
+        <h1>Checkout</h1>
+        <p>Review your order and choose how to pay.</p>
+    </header>
+
+    <div class="checkout-layout">
+
+        <section class="checkout-panel">
+            <h2>Items</h2>
+
+            <ul class="checkout-items">
+                {% for line in lines %}
+                <li>
+                    <img src="{{ url_for('static', filename='uploads/' + line.sticker.image) }}" alt="">
+                    <span class="checkout-item-name">
+                        {{ line.sticker.name }}
+                        <small>{{ line.unit_paisa|paisa }} × {{ line.quantity }}</small>
+                    </span>
+                    <strong>{{ line.line_paisa|paisa }}</strong>
+                </li>
+                {% endfor %}
+            </ul>
+
+            {% if buy_now %}
+                <a href="{{ url_for('sticker_detail', sticker_id=buy_now.sticker.id) }}" class="checkout-link">
+                    <i class="fa-solid fa-arrow-left"></i> Back to sticker
+                </a>
+            {% else %}
+                <a href="{{ url_for('payments.cart') }}" class="checkout-link">
+                    <i class="fa-solid fa-pen"></i> Edit cart
+                </a>
+            {% endif %}
+        </section>
+
+        <aside class="checkout-summary">
+            <h2>Pay With</h2>
+
+            {# Disables the button once submitted so a double click can't create two orders #}
+            <form method="POST" action="{{ url_for('payments.checkout') }}" class="pay-form"
+                  onsubmit="this.querySelector('button[type=submit]').disabled = true;">
+
+                {% if buy_now %}
+                    <input type="hidden" name="buy" value="{{ buy_now.sticker.id }}">
+                    <input type="hidden" name="quantity" value="{{ buy_now.quantity }}">
+                {% endif %}
+
+                <label class="pay-option {{ 'disabled' if not khalti_ready or total < khalti_min }}">
+                    <input type="radio"
+                           name="payment_method"
+                           value="khalti"
+                           {{ 'disabled' if not khalti_ready or total < khalti_min }}
+                           required>
+                    <span class="pay-logo pay-logo-khalti">Khalti</span>
+                    <span class="pay-text">
+                        <strong>Khalti</strong>
+                        {% if not khalti_ready %}
+                            <small>Not available right now</small>
+                        {% elif total < khalti_min %}
+                            <small>Orders of {{ khalti_min|rupees }} or more</small>
+                        {% else %}
+                            <small>Wallet, mobile banking or cards</small>
+                        {% endif %}
+                    </span>
+                </label>
+
+                <label class="pay-option">
+                    <input type="radio"
+                           name="payment_method"
+                           value="esewa"
+                           required
+                           {{ 'checked' if not khalti_ready or total < khalti_min }}>
+                    <span class="pay-logo pay-logo-esewa">eSewa</span>
+                    <span class="pay-text">
+                        <strong>eSewa</strong>
+                        <small>Pay from your eSewa wallet</small>
+                    </span>
+                </label>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>{{ total|rupees }}</span>
+                </div>
+
+                <button type="submit" class="checkout-btn">
+                    <i class="fa-solid fa-lock"></i> Pay {{ total|rupees }}
+                </button>
+
+                <p class="checkout-note">
+                    You'll be sent to the payment provider to finish paying, then brought back here.
+                </p>
+            </form>
+        </aside>
+
+    </div>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Coming back with the Back button restores the page as it was left,
+    // with the pay button still disabled.
+    window.addEventListener("pageshow", function () {
+        document.querySelectorAll(".pay-form button[type=submit]").forEach(function (button) {
+            button.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

@@ -82,10 +82,10 @@
 
                     <p class="sticker-meta">
                         {% if sticker.is_live %}
-                            <span>Rs. {{ sticker.price|int }}</span>
+                            <span>{{ sticker.price|rupees }}</span>
                         {% else %}
                             <span title="Your suggested price; the admin sets the final price">
-                                Suggested Rs. {{ sticker.review.proposed_price|int }}
+                                Suggested {{ sticker.review.proposed_price|rupees }}
                             </span>
                         {% endif %}
                         <span><i class="fa-solid fa-heart"></i> {{ like_count }}</span>

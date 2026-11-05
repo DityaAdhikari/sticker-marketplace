@@ -183,7 +183,7 @@
                                 <span class="rating-value">{{ like_count }}</span>
                                 <span class="review-count">{{ 'like' if like_count == 1 else 'likes' }}</span>
                             </div>
-                            <span class="currency-price">Rs. {{ sticker.price|int }}</span>
+                            <span class="currency-price">{{ sticker.price|rupees }}</span>
                         </div>
                     </div>
                 {% endfor %}
